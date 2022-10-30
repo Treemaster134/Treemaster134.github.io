@@ -1,0 +1,83 @@
+body {
+    background-color: white;
+}
+
+
+h1{
+    font-family: Arial, Helvetica, sans-serif
+}
+
+h2{
+    font-family: Arial, Helvetica, sans-serif
+}
+
+h3
+{
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+h4
+{
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+h5
+{
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.container{
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.searchWindow{
+    padding: 5%;
+    width: 30vw;
+    min-width: 200px;
+    height: 220px;
+    position: relative;
+}
+
+.searchContainer
+{
+    border: 2px solid black;
+    display: flex;
+    flex-direction: row;
+    margin-bottom: 10px;
+}
+
+.typeSelector
+{
+    position: absolute;
+    bottom: 0;
+    margin-bottom: 5px;
+}
+.subButton
+{
+    position: absolute;
+    bottom: 10px;
+    left: 20px;
+    margin-bottom: 15px;
+    
+}
+
+table, th, td{
+    
+    border: 1px solid black;
+}
+
+table
+{
+    width: 40vw;
+    min-width: 300px;
+    background-color: black;
+}
+
+th,td
+{
+    background-color: white;
+}

@@ -1,0 +1,33 @@
+body {
+    background-color: lightblue;
+}
+
+
+h1{
+    font-family: "Comic Sans MS", "Comic Sans", cursive;
+}
+
+h2{
+    font-family: "Comic Sans MS", "Comic Sans", cursive;
+}
+
+canvas
+{
+    border: 5px solid black;
+    background-color: white;
+}
+
+.container{
+    display: flex;
+    justify-content: center;
+}
+
+table, th, td{
+    
+    border: 1px solid black;
+}
+
+th,td
+{
+    background-color: white;
+}

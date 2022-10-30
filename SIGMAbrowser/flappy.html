@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>MATTE</h1>
+
+    <audio controls autoplay hidden>
+        <source src="music.mp3" type="audio/mpeg">
+    </audio>
+
+    <div class="container">
+        <canvas width="640" height="480" id="gameScreen"></canvas>
+    </div>
+    
+    <script>
+        
+        let c = document.getElementById("gameScreen");
+        let ctx = c.getContext("2d");
+        let playing = false;
+        let gameOver = false;
+        let backgroundImage = new Image()
+        let pipeSprite = new Image()
+        let playerSprite = new Image();
+        let jumpSound = new Audio("audio/skjut.mp3")
+        let score = 0;
+        let scrollSpeed = 1;
+
+        backgroundImage.onload = function()
+        {
+            ctx.drawImage(backgroundImage, 0,0);
+        }
+        backgroundImage.src = "images/CLASSROOM.png";
+
+        pipeSprite.onload = function()
+        {
+            ctx.drawImage(pipeSprite, 0,0);
+        }
+        pipeSprite.src = "images/calc(1).png";
+
+        playerSprite.onload = function()
+        {
+            ctx.drawImage(playerSprite, 0,0);
+        }
+        playerSprite.src = "images/rsz_win_20220926_18_43_29_pro.png";
+
+        function playerObject()
+        {
+            this.xPos = 10;
+            this.yPos = c.height/2;
+            this.yVel = 0;
+            this.update = function()
+            {
+                if(playing === true && gameOver === false)
+                {
+                    this.yPos += this.yVel;
+                    this.yVel += 0.3;
+                }
+
+                if(this.yPos + this.yVel < 1)
+                {
+                    this.yVel = 0;
+                    this.yPos = 2;
+                }
+
+                if(this.yPos + 61 > c.height)
+                {
+                    gameOver = true;
+                }
+                ctx.drawImage(playerSprite, this.xPos,this.yPos);
+            }
+            this.jump = function()
+            {
+                //alert("PPPFPPSP");
+                this.yVel = -7;
+                jumpSound.play();
+            }
+            this.die = function()
+            {
+                if(this.yPos < c.height)
+                {
+
+                }
+                this.yPos += this.yVel;
+                this.yVel += 0.3;
+            }
+        }
+
+        function backgroundObject(x)
+        {
+            this.xPos = x;
+            
+            this.update = function()
+            {
+                this.xPos -= 3 * scrollSpeed;
+                ctx.drawImage(backgroundImage, this.xPos, 0, 642, 480);
+                if(this.xPos < -639)
+                {
+                    this.xPos = 639;
+                }
+            }
+        }
+
+        
+
+        function pipeObject(x)
+        {
+            this.xPos = 640 + x;
+            this.yPos = getRandomInt(120, c.height - 120);
+            this.canSpawnMore = true;
+            this.colliding = false;
+            this.playerHasPassed = false;
+            this.update = function()
+            {
+                this.xPos -= 3 * scrollSpeed;
+                ctx.drawImage(pipeSprite, this.xPos, this.yPos  - 90, 120, -310);
+                ctx.drawImage(pipeSprite, this.xPos, this.yPos  + 90, 120, 310);
+                if(this.xPos + 100 < c.width/2 && this.canSpawnMore === true)
+                {
+                    pipes.push(new pipeObject(125));
+                    this.canSpawnMore = false;
+                }
+                if(this.xPos + 100 < -1)
+                {
+                    
+                    pipes.splice(pipes.indexOf(this),1);
+                }
+
+                if(player.xPos > this.xPos && this.playerHasPassed === false)
+                {
+                    score += 1;
+                    this.playerHasPassed = true;
+                }
+                //check collision
+                this.colliding = GetIntersect(player.xPos, player.yPos, 50, 61, this.xPos, this.yPos, 120);
+
+                if(this.colliding === true)
+                {
+                    gameOver = true;
+                    
+                }
+                
+                this.colliding = GetIntersect(player.xPos, player.yPos, 50, 61, this.xPos, this.yPos, 120);
+
+                if(this.colliding === true)
+                {
+                    gameOver = true;
+                    
+                }
+            }
+        }
+
+        let player = new playerObject();
+        let backgroundObject1 = new backgroundObject(0);
+        let backgroundObject2 = new backgroundObject(639);
+        let pipes = [];
+        for(var i = 0; i < 1; i++)
+        {
+            pipes.push(new pipeObject(500 * i));
+        }
+        var BB = c.getBoundingClientRect();
+        var BBoffsetX= BB.left;
+        var BBoffsetY= BB.top;
+        window.onscroll=function(e){ setBB(); }
+        window.onresize=function(e){ setBB(); }
+        c.onmousedown=handleMousedown;
+        c.onmouseup=handleMouseUpOut;
+        c.onmouseout=handleMouseUpOut;
+
+        setInterval(mainGameFunction, 10);
+
+        function mainGameFunction()
+        {
+            
+            draw();
+        }
+        
+        function getRandomInt(min, max) {
+            min = Math.ceil(min);
+            max = Math.floor(max);
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+        
+        function GetIntersect(x1, y1, w1, h1, x2, y2, w2)
+        {
+            var xCords1 = [];
+            var xCords2 = [];
+
+            var xIntersects = false;
+            var yIntersects = false;
+
+            for(var i = 0; i < w1; i++)
+            {
+                xCords1.push(x1 + i);
+            }
+            
+            for(var i = 0; i < w2; i++)
+            {
+                xCords2.push(x2 + i);
+            }
+
+            for(var i = 0; i < xCords1.length; i++)
+            {
+                if(xCords1.includes(xCords2[i]))
+                {
+                    xIntersects = true;
+                }
+            }
+
+            if(y1 <  y2 - 90 || y1 + 61 > y2 + 90)
+            {
+                yIntersects = true;
+            }
+
+
+            if(xIntersects === true && yIntersects === true)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        
+        }
+
+        function draw()
+        {
+            ctx.clearRect(0, 0, 640, 480);
+            
+            backgroundObject1.update();
+            backgroundObject2.update();
+            player.update();
+
+            if(playing)
+            {
+                for(var i = 0; i < pipes.length; i++)
+                {
+                    pipes[i].update();
+                }
+                drawStroked(score, c.width/2, 40);
+            }
+            else
+            {
+                ctx.fillStyle = "red";
+                ctx.fillRect(c.width/2 - 200, 15, 400, 150);
+                drawStroked("PROCRASTINATION:", c.width/2, 82.5);
+                drawStroked("THE GAME", c.width/2, 132.5);
+                drawStroked("CLICK TO START", c.width/2, 450)
+            }
+            ctx.fillStyle = "white"
+
+            if(gameOver === true)
+            {
+                scrollSpeed = 0;
+                ctx.fillStyle = "brown"
+                ctx.fillRect(70,70,c.width - 140,c.height - 140);
+                ctx.fillStyle = "white"
+                ctx.fillRect(90,90,c.width - 180,c.height - 180);
+                drawStroked("Slutebetyg i matematik: ", c.width/2, c.height/2 - 110);
+                ctx.strokeStyle = "red";
+                ctx.lineWidth = 15;
+                ctx.beginPath();
+                ctx.arc(c.width/2, c.height/2 + 10, 100, 0, 2 * Math.PI);
+                ctx.stroke(); 
+                ctx.lineWidth = 5;
+                ctx.fillStyle = "red"
+                ctx.beginPath();
+                ctx.moveTo(c.width/2 - 10, c.height/2 + 80);
+                ctx.lineTo(c.width/2 - 35, c.height/2 - 40);
+                ctx.lineTo(c.width/2 + 15, c.height/2 - 50);
+                ctx.lineTo(c.width/2 + 18.5, c.height/2 - 35);
+                ctx.lineTo(c.width/2 - 15, c.height/2 - 27.5);
+                ctx.lineTo(c.width/2 - 9.5, c.height/2);
+                ctx.lineTo(c.width/2 + 26.5, c.height/2 - 7.5);
+                ctx.lineTo(c.width/2 + 30, c.height/2 + 10);
+                ctx.lineTo(c.width/2 - 7, c.height/2 + 19);
+                ctx.lineTo(c.width/2 + 5, c.height/2 + 75);
+                ctx.lineTo(c.width/2 - 10, c.height/2 + 77.5);
+                ctx.stroke();
+                ctx.fill();
+            }
+
+            //ctx.fillText(pipes.length, c.width/2, c.height/2);
+            //ctx.drawImage(playerSprite, 0,0);
+        }
+
+        function drawStroked(text, x, y) {
+            ctx.textAlign = "center";
+            ctx.font = '40px Sans-serif';
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = 4;
+            ctx.strokeText(text, x, y);
+            ctx.fillStyle = 'white';
+            ctx.fillText(text, x, y);
+        }
+
+        function setBB(){
+            BB = c.getBoundingClientRect();
+            BBoffsetX=BB.left;
+            BBoffsetY=BB.top;
+        }   
+
+        function handleMousedown(e){
+            // calculate the mouse position RELATIVE TO THE CANVAS
+            var mouseX=parseInt(e.clientX-BBoffsetX);
+            var mouseY=parseInt(e.clientY-BBoffsetY);
+            if(playing === false)
+            {
+                playing = true;
+            }
+            //alert("ppee");
+            player.jump();
+            
+        }
+
+        function handleMouseUpOut(e){
+            // tell the browser we're handling this event
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    </script>
+</body>
+</html>

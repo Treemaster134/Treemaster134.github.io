@@ -1,0 +1,55 @@
+body {
+    background-image: url("images/background.gif");
+}
+
+a{
+    color: white;
+}
+a:hover{
+    color: yellow;
+}
+
+h1{
+    font-family: "Comic Sans MS", "Comic Sans", cursive;
+    color: white;
+}
+
+p{
+    font-family: "Comic Sans MS", "Comic Sans", cursive;
+    color: white;
+}
+.title{
+    font-family: "Comic Sans MS", "Comic Sans", cursive;
+    color: white;
+    text-align: center;
+    
+    white-space: nowrap; 
+}
+
+.separatorDiv{
+    background-repeat: repeat-x;
+    background-image: url("images/a03.gif");
+    width: 100%;
+    
+}
+
+h2{
+    font-family: "Comic Sans MS", "Comic Sans", cursive;
+}
+
+
+.content{
+    
+    position: relative;
+    height: 100%;
+}
+.MadeWith{
+    position:absolute;
+    left: 10px;
+    bottom: 0px;
+}
+
+
+
+
+

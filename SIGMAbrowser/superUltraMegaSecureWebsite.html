@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="login.css">
+    <script src="jquery-3.6.1.min.js"></script>
+    <script src="FunkyFuncs.js"></script>
+</head>
+<body>
+
+    <div class="searchContainer">
+        
+        <h1>Login</h1>
+        
+        <div class="searchWindow">
+            <form>
+                <input type="text" name="username" id="username" placeholder="Username">
+                <br>
+                <input type="password" name="password" id="password" placeholder="Password" onkeydown='errorText.style.display = "none"'>
+                <br>
+                <div class="inputDiv">
+                    <input type="button" value="Register" class="regButton" onclick="register()">
+                    <input type="button" value="Login" onclick="login()">
+                    <input type="button" value="Delete all (test only)" onclick="clearloginstestonly()">
+                </div>
+            </form>
+            
+        </div>
+        <h2 class="error" id="error"></h2>
+    </div>
+    
+    <script>
+        
+        if(localStorage.getItem("logins") === null)
+        {
+            let test = [];
+            localStorage.setItem("logins", JSON.stringify(test));
+        }
+
+        if(localStorage.getItem("username") === null)
+        {
+            localStorage.setItem("username", "logout");
+        }
+
+        
+        let errorText = document.getElementById("error");
+        errorText.style.display = "none";
+        
+
+        function register()
+        {
+            const username = document.getElementById("username").value;
+            const pass = document.getElementById("password").value;
+            
+
+            let loginsList = JSON.parse(localStorage.getItem("logins"));
+            let exist = false;
+            for(var i = 0; i < loginsList.length; i++)
+            {
+                if(loginsList[i].user === username)
+                {
+                    exist = true;
+                    break;
+                }
+            }
+            if(exist === true)
+            {
+                console.log("Account already exists");
+                errorText.innerHTML = "Account already exists";
+                errorText.style.display = "block";
+            }
+            else if(checkPassValidity(pass) === false)
+            {
+                console.log("Invalid Password");
+                errorText.innerHTML = "Password must include:" + '<br>' + "- One special character(@,#,$,%,&,?,-)" + '<br>' + "- One uppercase letter" + '<br>' + "- One lowercase letter";
+                errorText.style.display = "block";
+            }
+            else
+            {
+                loginsList.push({"user": username, "password": pass, "bg": "#FFFFFF", "pfp": "images/blankPFp.png", "quote": ""});
+                localStorage.setItem("logins", JSON.stringify(loginsList));
+                localStorage.setItem("username", username)
+                window.location.href = "browser.html";
+            }
+            
+        }
+
+        function checkPassValidity(str)
+        {
+            
+            let hasUpper = false;
+            let hasLower = false;
+            let hasSpecialChar = false;
+            let hasNumber = false;
+            for (var i=0; i<str.length; i++)
+            {
+                if (str.charAt(i) == str.charAt(i).toUpperCase() && str.charAt(i).match(/[a-z]/i))
+                {
+                    hasUpper = true;
+                    break;
+                }
+            }
+            for (var i=0; i<str.length; i++)
+            {
+                if (str.charAt(i) == str.charAt(i).toLowerCase() && str.charAt(i).match(/[a-z]/i))
+                {
+                    hasLower = true;
+                    break;
+                }
+            }
+            for (var i=0; i<str.length; i++)
+            {
+                if (str.charAt(i).match(/[0-9]/i))
+                {
+                    hasNumber = true;
+                    break;
+                }
+            }
+
+            const specialchars = ["&","#","$","@","%","?","-"];
+            for (var i=0; i<str.length; i++)
+            {
+                if (specialchars.includes(str[i]))
+                {
+                    hasSpecialChar = true;
+                    break;
+                }
+            }
+
+            if(hasSpecialChar === true && hasNumber === true && hasUpper === true && hasLower === true)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        function login()
+        {
+            const username = document.getElementById("username").value;
+            const pass = document.getElementById("password").value;
+            
+
+            let loginsList = JSON.parse(localStorage.getItem("logins"));
+            let exist = false;
+            for(var i = 0; i < loginsList.length; i++)
+            {
+                if(loginsList[i].user === username)
+                {
+                    exist = true;
+                    break;
+                }
+            }
+            if(exist === false)
+            {
+                console.log("Invalid username: Account with that username not found");
+                errorText.innerHTML = "Invalid username: Account with that username not found";
+                errorText.style.display = "block";
+            }
+            else
+            {
+                exist = false;
+                for(var i = 0; i < loginsList.length; i++)
+                {
+                    if(loginsList[i].password === pass)
+                    {
+                        exist = true;
+                        break;
+                    }
+                }
+                if(exist === true)
+                {
+                    console.log("welcome");
+                    localStorage.setItem("username", username)
+                    window.location.href = "browser.html";
+                }
+                else
+                {
+                    console.log("Wrong password");
+                    errorText.innerHTML = "Incorrect password";
+                    errorText.style.display = "block";
+                }
+            }
+            
+            
+        }
+
+        function clearloginstestonly()
+        {
+            let test = [{"user": "", "password": "", "bg": "#FFFFFF"}];
+            localStorage.setItem("logins", JSON.stringify(test));
+        }
+    </script>
+</body>
+</html>

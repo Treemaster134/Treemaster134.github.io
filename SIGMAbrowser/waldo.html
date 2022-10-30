@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="hitta.css">
+</head>
+<body style=" overflow: hidden;">
+    
+    <h4 id="usernameDisp">User:</h4>
+    <h4 id="scoreDisp" style="margin-top: 40px;">Score: 0</h4>
+    
+
+    <div class="containerSquared">
+
+        <div class="container">
+            <h2 id="timeDisp" style="margin-bottom: -10px; margin-top: -5px;">Time: </h2>
+            <canvas width="960" height="640" id="gameScreen" style="margin-top: 20px;"></canvas>
+                   
+        </div>
+    </div>
+        
+    <script>
+        let user = {"name": "", "drawing": "", "currentBG": 0};
+        if(localStorage.getItem("username") === null || localStorage.getItem("username") === "logout")
+        {
+            window.location.href = "superUltraMegaSecureWebsite.html";
+        }
+
+        if(localStorage.getItem("SavedPaintings") === null)
+        {
+            let test = [{"name": "", "drawing": "", "currentBG": 0}];
+            localStorage.setItem("SavedPaintings", JSON.stringify(test));
+        }
+
+        user.name = localStorage.getItem("username");
+        document.getElementById("usernameDisp").innerHTML = "User: " + user.name;
+        
+
+
+        let c = document.getElementById("gameScreen");
+        let ctx = c.getContext("2d");
+        
+        
+        const download = document.getElementById('download');
+        const saveOnlineButton = document.getElementById("saveToCloud");
+        let mouseDown = false;
+        let size = 70;
+        
+
+        let pictures = [
+            {"src":"images/wheredude/1.png", "x1":263, "y1":217, "x2":289, "y2":246},
+            {"src":"images/wheredude/2.png", "x1":258, "y1":199, "x2":285, "y2":234},
+            {"src":"images/wheredude/3.png", "x1":726, "y1":405, "x2":751, "y2":439},
+            {"src":"images/wheredude/4.png", "x1":835, "y1":484, "x2":855, "y2":516},
+            {"src":"images/wheredude/5.png", "x1":380, "y1":400, "x2":400, "y2":427},
+            {"src":"images/wheredude/6.jpg", "x1":403, "y1":472, "x2":440, "y2":520},
+            {"src":"images/wheredude/7.jpg", "x1":809, "y1":454, "x2":843, "y2":502}
+        ]
+
+        let currentImage = new Image();
+        let curImIndex = getRandomInt(0, pictures.length - 1);
+        currentImage.src = pictures[curImIndex].src;
+
+        
+        let mouseX = 0;
+        let mouseY = 0;
+        let score = 0;
+        let winFrames = -1;
+        let gameover = false;
+        let timeLeft = 60;
+        
+        var startDate = new Date();
+        
+        var BB = c.getBoundingClientRect();
+        var BBoffsetX= BB.left;
+        var BBoffsetY= BB.top;
+        window.onscroll=function(e){ setBB(); }
+        window.onresize=function(e){ setBB(); }
+        c.onmousedown=handleMousedown;
+        c.onmouseup=handleMouseUpOut;
+        c.onmouseout=handleMouseUpOut;
+
+        document.addEventListener('mousemove', mouseMoveHandler,false);
+
+        document.addEventListener("keydown", keyDownHandler, false);
+        
+        
+        function readURL(input, imgNum) {
+            var url = input.value;
+            var ext = url.substring(url.lastIndexOf('.') + 1).toLowerCase();
+            if (input.files && input.files[0]&& (ext == "gif" || ext == "png" || ext == "jpeg" || ext == "jpg")) {
+                var reader = new FileReader();
+
+                reader.onload = function (e) {
+                    bgImages[imgNum].src = e.target.result;
+                    drawBGStart();
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+            
+        }
+
+
+        setInterval(mainGameFunction, 1);
+        console.log(pictures);
+        function mainGameFunction()
+        {
+            var endDate   = new Date();
+            var seconds = (endDate.getTime() - startDate.getTime());
+            
+            
+
+            
+            
+            
+            ctx.drawImage(currentImage, 0,0,c.width,c.height);
+            if(timeLeft - Math.round(seconds/1000) < 1)
+            {
+                gameover = true;
+            }
+            if(winFrames > 0)
+            {
+                winFrames -= 1; 
+                ctx.textAlign = "center";
+                ctx.fillStyle = "green"
+                ctx.fillRect(0,0,c.width,c.height)
+                ctx.font = "bold 48px serif";
+                ctx.fillStyle = "black";
+                ctx.fillText("Du hittade honom!", c.width/2,c.height/2)
+                startDate = new Date();
+            }
+            if(gameover === true)
+            {
+                ctx.textAlign = "center";
+                ctx.fillStyle = "red";
+                ctx.fillRect(0,0,c.width,c.height);
+                ctx.font = "bold 48px serif";
+                ctx.fillStyle = "black";
+                ctx.fillText("Är du blind?", c.width/2,c.height/2)
+                document.getElementById("timeDisp").innerHTML = "Time: " + "0";
+            }
+            else
+            {
+                document.getElementById("timeDisp").innerHTML = "Time: " + (timeLeft - Math.round(seconds/1000));
+            }
+        }
+
+        
+        function getRandomInt(min, max) {
+            min = Math.ceil(min);
+            max = Math.floor(max);
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+        
+        
+
+        function keyDownHandler(e)
+        {
+            
+        }
+
+        
+
+        function setBB(){
+            BB = c.getBoundingClientRect();
+            BBoffsetX=BB.left;
+            BBoffsetY=BB.top;
+        }   
+
+
+        function mouseMoveHandler(e)
+        {
+            mouseX=parseInt(e.clientX-BBoffsetX);
+            mouseY=parseInt(e.clientY-BBoffsetY);
+
+            
+        }
+
+        function handleMousedown(e){
+            // calculate the mouse position RELATIVE TO THE CANVAS
+            if(mouseX > pictures[curImIndex].x1 && mouseX < pictures[curImIndex].x2 && mouseY > pictures[curImIndex].y1 && mouseY < pictures[curImIndex].y2)
+            {
+                if(gameover === true)
+                {
+                    return;
+                }
+                //alert("Du hittade honom");
+                winFrames = 35;
+                let tempIndex = curImIndex;
+                while(tempIndex === curImIndex)
+                {
+                    tempIndex = getRandomInt(0, pictures.length - 1);
+                }
+                console.log("AAAAAAAAAA");
+                curImIndex = tempIndex;
+                currentImage.src = pictures[curImIndex].src;
+                score += 1;
+                document.getElementById("scoreDisp").innerHTML = "Score: " + score;
+            }
+            else
+            {
+                gameover = true;
+            }
+        }
+
+        function handleMouseUpOut(e){
+            // tell the browser we're handling this event
+            e.preventDefault();
+            e.stopPropagation();
+            mouseDown = false;
+        }
+    </script>
+</body>
+</html>

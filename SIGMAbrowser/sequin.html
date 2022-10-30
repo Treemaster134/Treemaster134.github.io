@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="sequin.css">
+</head>
+<body>
+    <h1>sequin.js</h1>
+    <h4 id="usernameDisp">User:</h4>
+
+    <audio controls loop autoplay hidden>
+        <source src="audio/marioPaint.mp3" type="audio/mpeg">
+    </audio>
+
+    <div class="containerSquared">
+
+        <div class="container">
+            
+            <canvas width="640" height="480" id="gameScreen"></canvas>
+            <button id="upload1">Upload Image 1</button>
+            <button id="upload2">Upload Image 2</button>
+            <input id='fileid1' type='file' hidden onchange="readURL(this, 0)"/>
+            <input id='fileid2' type='file' hidden onchange="readURL(this, 1)"/>        
+        </div>
+    </div>
+        
+    <script>
+        let user = {"name": "", "drawing": "", "currentBG": 0};
+        if(localStorage.getItem("username") === null || localStorage.getItem("username") === "logout")
+        {
+            window.location.href = "superUltraMegaSecureWebsite.html";
+        }
+
+        if(localStorage.getItem("SavedPaintings") === null)
+        {
+            let test = [{"name": "", "drawing": "", "currentBG": 0}];
+            localStorage.setItem("SavedPaintings", JSON.stringify(test));
+        }
+
+        user.name = localStorage.getItem("username");
+        document.getElementById("usernameDisp").innerHTML = "User: " + user.name;
+        
+
+
+        let c = document.getElementById("gameScreen");
+        let ctx = c.getContext("2d");
+        
+        
+        const download = document.getElementById('download');
+        const saveOnlineButton = document.getElementById("saveToCloud");
+        let mouseDown = false;
+        let size = 70;
+        
+
+        let bgImages = [new Image(), new Image()];
+
+        bgImages[0].src = 'images/idiotB.png';
+        bgImages[1].src = 'images/CLASSROOM.png';
+        
+
+        let currentBg = 1;
+        let paintX = 0;
+        let paintY = 0;
+
+        bgImages[currentBg].onload = function(){
+            ctx.drawImage(bgImages[currentBg],0,0,640,480);
+        }
+        
+        var BB = c.getBoundingClientRect();
+        var BBoffsetX= BB.left;
+        var BBoffsetY= BB.top;
+        window.onscroll=function(e){ setBB(); }
+        window.onresize=function(e){ setBB(); }
+        c.onmousedown=handleMousedown;
+        c.onmouseup=handleMouseUpOut;
+        c.onmouseout=handleMouseUpOut;
+
+        document.addEventListener('mousemove', mouseMoveHandler,false);
+
+        document.addEventListener("keydown", keyDownHandler, false);
+        
+        upload1.addEventListener('click', function(e) {
+            document.getElementById('fileid1').click();
+        });
+
+        upload2.addEventListener('click', function(e) {
+            document.getElementById('fileid2').click();
+        });
+        
+        function readURL(input, imgNum) {
+            var url = input.value;
+            var ext = url.substring(url.lastIndexOf('.') + 1).toLowerCase();
+            if (input.files && input.files[0]&& (ext == "gif" || ext == "png" || ext == "jpeg" || ext == "jpg")) {
+                var reader = new FileReader();
+
+                reader.onload = function (e) {
+                    bgImages[imgNum].src = e.target.result;
+                    drawBGStart();
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+            
+        }
+
+
+        setInterval(mainGameFunction, 1);
+
+        function mainGameFunction()
+        {
+            
+            if(mouseDown === true)
+            {
+                drawPixel(paintX,paintY,size);
+            }   
+        }
+
+        function drawBGStart()
+        {
+            ctx.clearScreen(0,0,640,480);
+            currentBg = 0;
+            ctx.drawImage(bgImages[currentBg],0,0,640,480);
+        }
+        
+        function getRandomInt(min, max) {
+            min = Math.ceil(min);
+            max = Math.floor(max);
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+        
+        
+
+        function drawPixel( x, y, size)
+        {
+            
+            let xperc = x/640;
+            let yperc = y/480;
+            let sXperc = size/640;
+            let sYperc = size/480;
+
+            if(direction === "up")
+            {
+                currentBg = 0;
+            }
+            else if(direction === "down")
+            {
+                currentBg = 1;
+            }
+            else
+            {
+                currentBg = currentBg;
+            }
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(x, y, size/2, 0, Math.PI*2);
+            ctx.closePath();
+            ctx.clip();
+
+            ctx.drawImage(bgImages[currentBg],bgImages[currentBg].width * xperc - (bgImages[currentBg].width * sXperc)/2, bgImages[currentBg].height * yperc - (bgImages[currentBg].height * sYperc)/2, bgImages[currentBg].width * sXperc, bgImages[currentBg].height * sYperc,x - size/2,y - size/2,size,size);
+            //ctx.globalCompositeOperation='destination-in';
+            ctx.beginPath();
+            ctx.arc(x, y, size/2, 0, Math.PI*2);
+            ctx.clip();
+            ctx.closePath();
+            ctx.restore();
+            //ctx.globalCompositeOperation='source-over';
+        }
+
+        function keyDownHandler(e)
+        {
+            
+        }
+
+        
+
+        function setBB(){
+            BB = c.getBoundingClientRect();
+            BBoffsetX=BB.left;
+            BBoffsetY=BB.top;
+        }   
+
+
+        function mouseMoveHandler(e)
+        {
+            var mouseX=parseInt(e.clientX-BBoffsetX);
+            var mouseY=parseInt(e.clientY-BBoffsetY);
+
+            if(paintY < mouseY)
+            {
+                direction = "up";
+            }
+            else if(paintY > mouseY)
+            {
+                direction = "down";
+            }
+            else
+            {
+                direction = "none";
+            }
+            paintX = mouseX;
+            paintY = mouseY;
+        }
+
+        function handleMousedown(e){
+            // calculate the mouse position RELATIVE TO THE CANVAS
+            mouseDown = true;
+            
+        }
+
+        function handleMouseUpOut(e){
+            // tell the browser we're handling this event
+            e.preventDefault();
+            e.stopPropagation();
+            mouseDown = false;
+        }
+    </script>
+</body>
+</html>

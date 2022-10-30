@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Hur många heter ___?</h1>
+
+    <audio controls autoplay hidden>
+        <source src="music.mp3" type="audio/mpeg">
+    </audio>
+
+    <div class="container">
+        <canvas width="640" height="480" id="gameScreen"></canvas>
+    </div>
+    
+    <script>
+        
+        let c = document.getElementById("gameScreen");
+        let ctx = c.getContext("2d");
+        let gameOver = false;
+        let score = 0;
+        let winframes = -2;
+        let wrongSound = new Audio("audio/wrongHOL.wav");
+        let rightSound = new Audio("audio/correctHOL.wav");
+        const names = [
+            {Name: "MARIA", Amount:"447686"},
+            {Name: "ELISABETH", Amount:"340668"},
+            {Name: "ANNA", Amount:"304000"},
+            {Name: "KRISTINA", Amount:"280543"},
+            {Name: "MARGARETA", Amount:"244641"},
+            {Name: "EVA", Amount:"200882"},
+            {Name: "LINNÉA", Amount:"166531"},
+            {Name: "KARIN", Amount:"161897"},
+            {Name: "BIRGITTA", Amount:"159159"},
+            {Name: "MARIE", Amount:"145978"},
+            {Name: "KARL", Amount:"341187"},
+            {Name: "ERIK", Amount:"331575"},
+            {Name: "LARS", Amount:"226139"},
+            {Name: "ANDERS", Amount:"186455"},
+            {Name: "PER", Amount:"181851"},
+            {Name: "MIKAEL", Amount:"181017"},
+            {Name: "JOHAN", Amount:"176355"},
+            {Name: "OLOF", Amount:"143401"},
+            {Name: "NILS", Amount:"140589"},
+            {Name: "JAN", Amount:"125957"},
+            {Name: "INGRID", Amount: "111657"}
+        ]
+        let currentObject = names[getRandomInt(0, 20)];
+        let nextObject = names[getRandomInt(0, 20)];
+        if(nextObject === currentObject)
+        {
+            nextObject = names[getRandomInt(0, 20)];
+        }
+
+        var BB = c.getBoundingClientRect();
+        var BBoffsetX= BB.left;
+        var BBoffsetY= BB.top;
+        window.onscroll=function(e){ setBB(); }
+        window.onresize=function(e){ setBB(); }
+        c.onmousedown=handleMousedown;
+        c.onmouseup=handleMouseUpOut;
+        c.onmouseout=handleMouseUpOut;
+
+        setInterval(mainGameFunction, 10);
+
+        function mainGameFunction()
+        {
+            if(winframes > -1)
+            {
+                winframes += 1;
+            }
+            draw();
+        }
+        
+        function getRandomInt(min, max) {
+            min = Math.ceil(min);
+            max = Math.floor(max);
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+        function chooseNew(guess)
+        {
+            var curAm = parseInt(currentObject.Amount);
+            var newAm = parseInt(nextObject.Amount);
+            if(curAm < newAm)
+            {
+                if(guess === "higher")
+                {
+                    score += 1;
+                    winframes = 0;
+                    rightSound.play();
+                }
+                else
+                {
+                    gameOver = true;
+                    wrongSound.play();
+                    return;
+                }
+            }
+            if(curAm > newAm)
+            {
+                if(guess === "lower")
+                {
+                    score += 1;
+                    winframes = 0;
+                    rightSound.play();
+                }
+                else
+                {
+                    gameOver = true;
+                    wrongSound.play();
+                    return;
+                }
+            }
+            currentObject = nextObject;
+            nextObject = names[getRandomInt(0, 20)];
+            if(nextObject === currentObject)
+            {
+                nextObject = names[getRandomInt(0, 20)];
+            }
+        }
+        function draw()
+        {
+            ctx.textAlign = "center"; 
+            ctx.fillStyle = "blue";
+            ctx.fillRect(0,0,c.width/2, 480)
+            ctx.fillStyle = "Yellow";
+            ctx.fillRect(c.width/2,0,c.width/2,480)
+            var leftMiddle = (c.width/2)/2;
+            var rightMiddle =  (c.width + (c.width/2))/2;
+            drawStroked(currentObject.Name, leftMiddle, 240)
+            drawStroked(currentObject.Amount, leftMiddle, 300)
+            drawStroked(nextObject.Name, rightMiddle, 240)
+            drawButton(c.width/4 * 3, 340, 150, 50);
+            drawButton(c.width/4 * 3, 400, 150, 50);
+            ctx.fillStyle = "black";
+            ctx.textAlign = "center";
+            ctx.fillText("Fler", c.width/4 * 3, 377);
+            ctx.fillText("Färre", c.width/4 * 3, 437);
+            ctx.textAlign = "left";
+            ctx.fillText(score, 10, 40);
+            if(gameOver === true)
+            {
+                ctx.textAlign = "center";
+                ctx.fillStyle = "red";
+                ctx.fillRect(0,0,c.width, c.height);
+                ctx.fillStyle = "white";
+                ctx.fillText("GAME OVER", c.width/2, c.height/2);
+                ctx.fillText(score, c.width/2, c.height/2 + 50);
+            }
+            if(winframes > 0)
+            {
+                
+                ctx.fillStyle = "green";
+                ctx.fillRect(0,0,c.width, c.height);
+                if(winframes > 15)
+                {
+                    winframes = -2;
+                }
+            }
+        }
+
+        function drawStroked(text, x, y) {
+            ctx.font = '40px Sans-serif';
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = 4;
+            ctx.strokeText(text, x, y);
+            ctx.fillStyle = 'white';
+            ctx.fillText(text, x, y);
+        }
+
+        function drawButton(x, y, w, h)
+        {
+            
+            ctx.fillStyle = "white";
+            ctx.strokeStyle = "black";
+            ctx.rect(x - w/2, y, w, h);
+            ctx.fill();
+            ctx.stroke();
+            
+            
+        }
+
+
+        function setBB(){
+            BB = c.getBoundingClientRect();
+            BBoffsetX=BB.left;
+            BBoffsetY=BB.top;
+        }   
+        function handleMousedown(e){
+            // calculate the mouse position RELATIVE TO THE CANVAS
+            var mouseX=parseInt(e.clientX-BBoffsetX);
+            var mouseY=parseInt(e.clientY-BBoffsetY);
+            if(gameOver === true)
+            {
+                return;
+            }
+            var xMid = (c.width/4) * 3;
+            if(mouseX > xMid - 75 && mouseX < xMid + 75)
+            {
+                if(mouseY > 340 && mouseY < 390)
+                {
+                    chooseNew("higher");
+                }
+                else if(mouseY > 400 && mouseY < 450)
+                {
+                    chooseNew("lower");
+                }
+            }
+            // you have the mouse position so now do your button stuff
+        }
+        function handleMouseUpOut(e){
+            // tell the browser we're handling this event
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    </script>
+</body>
+</html>

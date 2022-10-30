@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Σ</title>
+    <link rel="stylesheet" href="list.css">
+    <script src="jquery-3.6.1.min.js"></script>
+    <script src="FunkyFuncs.js"></script>
+    <link rel="icon" href="images/favicon.ico">
+</head>
+<body onload="loadBG()">
+
+    <div class="container">
+        
+        
+        <div class="searchContainer">
+            <div class="searchWindow">
+                <div class="nameDisp">
+                    <h4 id="userDisplay">User: </h4>
+                </div>
+                
+                    <input style="background-color: transparent;" type="submit" value="Back" onclick="javascript: returnToMenu()">
+                
+               
+                
+            </div>
+        </div>
+        <table id="data_table">
+            <tr>
+                <td><h2>Namn</h2></td>
+                <td><h4>Tags</h4></td>
+            </tr>
+        </table>
+    </div>
+    
+    <script>
+        
+        if(localStorage.getItem("username") === null || localStorage.getItem("username") === "logout")
+        {
+            window.location.href = "superUltraMegaSecureWebsite.html";
+        }
+       
+
+        document.getElementById("userDisplay").innerHTML = "User: " + localStorage.getItem("username");
+        loadBG();
+        loadAccounts();
+
+        function returnToMenu()
+        {
+            window.location.href = "browser.html";
+        }
+
+        function loadAccounts()
+        {
+            
+            const loginsList = JSON.parse(localStorage.getItem("logins"));
+            console.log(loginsList);
+            
+            clearTable();
+            let table = document.getElementById("data_table");
+            let table_len = loginsList.length;
+
+            
+
+            for(var i = 0; i < table_len + 1; i++)
+            {
+                console.log(table_len);
+                console.log(loginsList.length);
+                if(i != 0)
+                {
+                    if(loginsList[i - 1].user === "")
+                    {
+                        continue;
+                    }
+                    let name = loginsList[i - 1].user;
+                    let quote = loginsList[i - 1].quote;
+                    let pfp = loginsList[i - 1].pfp;
+                    if(quote != "")
+                    {
+                        quote = '"' + quote + '"'
+                    }
+                    
+
+                    var row = table.insertRow(i - 1).outerHTML="<tr><td><h2>" + name + "</h2><h3>" + quote + "</h3><img src='" + pfp + "' style='float:right; position:absolute;' width=40px></td></tr>";
+                }
+                else
+                {
+                    var row = table.insertRow(i).outerHTML="<tr><td><h2>" + "Users" + "</h2></td></tr>";
+                }
+            }
+        }
+        
+        
+        function clearTable()
+        {
+            let table = document.getElementById("data_table");
+            
+            let rowsLeft = true;
+            
+            while(rowsLeft === true)
+            {
+                let table_len = table.rows.length;
+                if(table_len > 0)
+                {
+                    table.deleteRow(0);
+                }
+                else
+                {
+                    rowsLeft = false;
+                }
+            }
+        }
+
+        function loadBG()
+        {
+            const username = localStorage.getItem("username");
+            
+            
+
+            let loginsList = JSON.parse(localStorage.getItem("logins"));
+            let exist = false;
+            for(var i = 0; i < loginsList.length; i++)
+            {
+                if(loginsList[i].user === username)
+                {
+                    exist = true;
+                    document.body.style.background = loginsList[i].bg;
+                    break;
+                }
+            }
+            
+        }
+    </script>
+</body>
+</html>
