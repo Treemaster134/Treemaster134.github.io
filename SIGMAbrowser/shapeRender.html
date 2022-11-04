@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="shapeRender.css">
+</head>
+<body>
+    <h1>Primitive 2D Shape Renderer</h1>
+    <h4 id="usernameDisp">User:</h4>
+
+    <div class="container">
+
+        
+        <div>
+            <ul>
+                <li>
+
+                    <h4>Radius:</h4>
+                    <input type="range" min="5" max="100" value="50" id="sizeInp">
+                </li>
+                <li>
+                    <h4>Edges:</h4>
+                    <input type="range" min="3" max="36" value="4" id="edgesInp">
+                </li>
+                <li>
+                    <h4>Red:</h4>
+                    <input type="range" min="16" max="255" value="255" id="redInp">
+                </li>
+                <li>
+                    <h4>Green:</h4>
+                    <input type="range" min="16" max="255=" value="255" id="greenInp">
+                </li>
+                <li>
+                    <h4>Blue:</h4>
+                    <input type="range" min="16" max="255" value="255" id="blueInp">
+                </li>
+                <li>
+                    <h4>Filled:</h4>
+                    <input type="checkbox" id="filled">
+                </li>
+            </ul>
+        </div>     
+        <canvas width="640" height="480" id="gameScreen"></canvas>   
+        
+    </div>
+        
+    <script>
+        let user = {"name": "", "drawing": "", "currentBG": 0};
+        if(localStorage.getItem("username") === null || localStorage.getItem("username") === "logout")
+        {
+            window.location.href = "superUltraMegaSecureWebsite.html";
+        }
+
+        if(localStorage.getItem("SavedPaintings") === null)
+        {
+            let test = [{"name": "", "drawing": "", "currentBG": 0}];
+            localStorage.setItem("SavedPaintings", JSON.stringify(test));
+        }
+
+        user.name = localStorage.getItem("username");
+        document.getElementById("usernameDisp").innerHTML = "User: " + user.name;
+        
+
+
+        let c = document.getElementById("gameScreen");
+        let ctx = c.getContext("2d");
+        
+        let edges = 4;
+        let radius = 50;
+        let angle = 0;
+        let Color = [0,0,0];
+        let filled = false;
+        ctx.translate(c.width/2, c.height/2);
+        setInterval(mainGameFunction, 1);
+
+        function mainGameFunction()
+        {
+
+            ctx.clearRect(-c.width, -c.height,c.width * 2, c.height * 2);
+            ctx.fillStyle = "black";
+            ctx.fillRect(-c.width, -c.height,c.width * 2, c.height * 2);
+            
+            radius = document.getElementById("sizeInp").value;
+            edges = document.getElementById("edgesInp").value;
+            Color = [parseInt(document.getElementById("redInp").value),parseInt(document.getElementById("greenInp").value), parseInt(document.getElementById("blueInp").value)];
+            angle += 0.005;
+            ctx.save();
+            ctx.rotate(angle);
+            let outlineRadius = parseInt(radius) + 1.25;
+            filled = document.getElementById("filled").checked;
+            
+            for(var i = 0; i < edges + 1; i++)
+            {
+                
+                let xMid = radius * Math.cos( (i/edges * 2) * Math.PI );
+                let yMid = radius * Math.sin( (i/edges * 2) * Math.PI );
+
+                let x1 = xMid + (radius * Math.cos( ((i - 1)/edges * 2) * Math.PI ));
+                let y1 = yMid + (radius * Math.sin( ((i - 1)/edges * 2) * Math.PI ));
+
+                let x2 = xMid + (radius * Math.cos( ((i + 1)/edges * 2) * Math.PI ));
+                let y2 = yMid + (radius * Math.sin( ((i + 1)/edges * 2) * Math.PI ));
+
+                ctx.strokeStyle = "#" + valueToHex(Color[0]) + valueToHex(Color[1]) + valueToHex(Color[2]);
+                ctx.fillStyle = "#" + valueToHex(Color[0]) + valueToHex(Color[1]) + valueToHex(Color[2]);
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                if(filled === true)
+                {
+                    ctx.lineTo(0,0);
+                    ctx.fill();
+                }
+                
+                ctx.stroke();
+                
+                
+            }
+            
+            if(filled === true)
+            {
+                for(var i = 0; i < edges + 1; i++)
+                {
+                    let xMid = outlineRadius * Math.cos( (i/edges * 2) * Math.PI );
+                    let yMid = outlineRadius * Math.sin( (i/edges * 2) * Math.PI );
+
+                    let x1 = xMid + (outlineRadius * Math.cos( ((i - 1)/edges * 2) * Math.PI ));
+                    let y1 = yMid + (outlineRadius * Math.sin( ((i - 1)/edges * 2) * Math.PI ));
+
+                    let x2 = xMid + (outlineRadius * Math.cos( ((i + 1)/edges * 2) * Math.PI ));
+                    let y2 = yMid + (outlineRadius * Math.sin( ((i + 1)/edges * 2) * Math.PI ));
+
+                    ctx.strokeStyle = "white";
+                    ctx.beginPath();
+                    ctx.moveTo(x1, y1);
+                    ctx.lineTo(x2, y2);
+                    ctx.stroke();
+                }
+            }
+            ctx.restore();
+        }
+        
+        function valueToHex(c)
+        {
+            let hex = c.toString(16).toUpperCase();
+            return hex;
+        }
+        
+    </script>
+</body>
+</html>
