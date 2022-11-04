@@ -166,7 +166,7 @@
                     let x2 = xMid + (outlineRadius * Math.cos( ((i + 1)/edges * 2) * Math.PI ));
                     let y2 = yMid + (outlineRadius * Math.sin( ((i + 1)/edges * 2) * Math.PI ));
 
-                    ctx.strokeStyle = "white";
+                    ctx.strokeStyle = "#" + valueToHex(Color[0]) + valueToHex(Color[1]) + valueToHex(Color[2]);
                     ctx.beginPath();
                     ctx.moveTo(x1, y1);
                     ctx.lineTo(x2, y2);
@@ -176,7 +176,8 @@
                     let y3 = y1 - origoDisplacementY;
                     let x4 = x2 - origoDisplacementX;
                     let x3 = x1 - origoDisplacementX;
-
+                    
+                    ctx.strokeStyle = "white";
                     ctx.beginPath();
                     ctx.moveTo(x1, y1);
                     ctx.lineTo(x3, y3);
