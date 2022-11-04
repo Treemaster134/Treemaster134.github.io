@@ -12,5 +12,7 @@
     {"name":"Hex <-> RGB", "description":"Ett verktyg för att konvertera Hex till RGB och vice versa", "tags":["Applikation"], "title": "colorconvert"},
     {"name":"Enhetskonverteringsverktyg", "description":"Ett verktyg för konvertera mellan enheter", "tags":["Applikation"], "title": "unitconvert"},
     {"name":"Hitta.js", "description":"Klon av 'Wheres waldo'", "tags":["Spel"], "title": "waldo"},
-    {"name":"WanderingStar.js", "description":"Klon av 'Asteroids'", "tags":["Spel"], "title": "asteroids"}
+    {"name":"WanderingStar.js", "description":"Klon av 'Asteroids'", "tags":["Spel"], "title": "asteroids"},
+    {"name":"Primitive 2D Shape Renderer", "description":"Ritar 2d former", "tags":["Misc."], "title": "shapeRender"},
+    {"name":"Primitive 3D Shape Renderer", "description":"Ritar 3d former", "tags":["Misc."], "title": "shapeRender3D"}
 ]
