@@ -41,7 +41,7 @@
 
         user.name = localStorage.getItem("username");
         let loginsList = JSON.parse(localStorage.getItem("logins"));
-        user.pfp.src = "Images/blankPFp.png";
+        user.pfp.src = "images/blankPFp.png";
         for(var i = 0; i < loginsList.length; i++)
         {
             if(loginsList[i].user === user.name)
@@ -62,8 +62,8 @@
         let totalSticks = 15;
         let computerPFP = new Image();
 
-        let takeSticksSFX = new Audio("Audio/pickupStick.wav");
-        let endSFX = new Audio("Audio/end.ogg");
+        let takeSticksSFX = new Audio("audio/pickupStick.wav");
+        let endSFX = new Audio("audio/end.ogg");
 
 
         let gameover = false;
@@ -73,7 +73,7 @@
             ctx.drawImage(computerPFP,c.width/2 + 50, 60, 80, 80);
         }
 
-        computerPFP.src = "Images/blankPFp.png";
+        computerPFP.src = "images/blankPFp.png";
         
         document.getElementById("upload1").style.visibility = "visible";
         document.getElementById("upload2").style.visibility = "visible";
