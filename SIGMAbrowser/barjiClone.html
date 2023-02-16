@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="shapeRender.css">
+    <script src="FunkyFuncs.js"></script>
+</head>
+<body>
+    <h1>Game</h1>
+    <h4 id="usernameDisp">User:</h4>
+
+    <div class="container">
+ 
+        <canvas width="560" height="560" id="gameScreen" style="background-color: white; border: solid black 3px;"></canvas>   
+        
+    </div>
+        
+    <script>
+        let user = {"name": "", "drawing": "", "currentBG": 0};
+        if(localStorage.getItem("username") === null || localStorage.getItem("username") === "logout")
+        {
+            window.location.href = "superUltraMegaSecureWebsite.html";
+        }
+
+        if(localStorage.getItem("SavedPaintings") === null)
+        {
+            let test = [{"name": "", "drawing": "", "currentBG": 0}];
+            localStorage.setItem("SavedPaintings", JSON.stringify(test));
+        }
+
+        user.name = localStorage.getItem("username");
+        document.getElementById("usernameDisp").innerHTML = "User: " + user.name;
+        
+
+
+        let c = document.getElementById("gameScreen");
+        let ctx = c.getContext("2d");
+        let score = 0;
+        let shootSFX = new Audio("audio/Laser_Shoot5.wav");
+        let holdingSpace = false;
+        let pressedKeys = [];
+        let bullets = [];
+        let asteroids = [];
+
+        function planetObj(x, y) 
+        {
+            this.sprite = new Image();
+            this.sprite.src = "Images/planet.png";
+            this.target = {"angle": 0.0, "sprite": new Image()};
+            this.target.sprite.src = "Images/base.png";
+            this.angle = 0;
+            ctx.translate(x,y);
+            ctx.save();
+
+            this.update = function()
+            {
+                this.angle += 0.02;
+                if(this.angle > Number.MAX_SAFE_INTEGER)
+                {
+                    this.angle = 0;
+                }
+                //console.log(this.angle);
+                //this.target.angle = this.angle + (90 * Math.PI/180);
+                
+                this.baseX = 80 * Math.cos(this.angle + this.target.angle);
+                this.baseY = 80 * Math.sin(this.angle + this.target.angle);
+
+                for(var i = 0; i < bullets.length;i++)
+                {
+                    if(bullets[i].x < this.baseX + 15 && bullets[i].y < this.baseY + 15 && bullets[i].x > this.baseX - 15 && bullets[i].y > this.baseY - 15)
+                    {
+                        
+                        bullets.splice(i, 1);
+                        this.moveBase();
+                    }
+                }
+
+                ctx.beginPath();
+                ctx.arc(this.baseX, this.baseY, 15, 0, 2 * Math.PI);
+                ctx.fillStyle = "DeepSkyBlue";
+                ctx.fill();
+                ctx.stroke(); 
+                ctx.save();
+                ctx.rotate(this.angle);
+                ctx.drawImage(this.sprite, -90, -90, 180, 180);
+                ctx.restore();
+                
+                
+            }
+
+            this.moveBase = function()
+            {
+                this.target.angle = getRandomInt(0, 360) * Math.PI/360;
+                score += 1;
+                startDate = new Date();
+            }
+        }
+        
+        function bulletObj(x,y,a)
+        {
+            
+            this.x = x;
+            this.y = y;
+            this.a = a;
+            
+            this.update = function()
+            {
+                
+                if(Math.abs(this.x) < 80 && Math.abs(this.y) < 80)
+                {
+                    bullets.splice(bullets.indexOf(this), 1);
+                }
+
+                this.x += 6 * Math.cos(this.a);
+                this.y += 6 * Math.sin(this.a);
+                this.oldPos = [this.x,this.y];
+                
+                ctx.fillStyle="#000000";
+                ctx.fillRect(this.xPos, this.yPos,5, 5);
+                
+                
+                this.xPos = this.oldPos[0];
+                this.yPos = this.oldPos[1];
+            }
+            
+        }
+
+
+        function asteroidObj(x,y)
+        {
+            this.xPos = x;
+            this.yPos = y;
+            if(getRandomInt(0, 1) === 1)
+            {
+                this.xPos = this.xPos * -1;
+            }
+
+            if(getRandomInt(0, 1) === 1)
+            {
+                this.yPos = this.yPos * -1;
+            }
+
+            this.dx = getRandomInt(-500,500) - this.xPos;
+            this.dy = getRandomInt(-500,500) - this.yPos;
+
+            this.angle = Math.atan2(this.dy, this.dx);
+            
+            this.v = 1.5;
+            
+            
+            this.dead = false;
+            console.log(this.xPos);
+            this.update = function()
+            {
+                //ctx.drawImage(asteroidSprite, this.xPos, this.yPos, this.size * 40, this.size * 40);
+                ctx.beginPath();
+                ctx.arc(this.xPos, this.yPos, 20, 0, 2 * Math.PI);
+                ctx.fillStyle = "black";
+                ctx.fill();
+                ctx.stroke(); 
+                
+                this.xPos += this.v * Math.cos(this.angle);
+                this.yPos += this.v * Math.sin(this.angle);
+                for(var i = 0; i < bullets.length; i++)
+                {
+                    if(bullets[i].x > this.xPos && bullets[i].x < this.xPos + 20 && bullets[i].y > this.yPos && bullets[i].y < this.yPos + 20)
+                    {
+                        
+                        bullets.splice(i,1);
+                        this.dead = true;
+                        console.log(asteroids);
+                        HitAsteroidSFX.play();
+                    }
+                    if(this.dead === true)
+                    {
+                        score += 1;
+                        asteroids.splice(asteroids.indexOf(this), 1);
+
+                    }
+                }
+
+                if(player.x > this.xPos && player.x < this.xPos + 20 && player.y > this.yPos && player.y < this.yPos + 20)
+                {
+                    /*
+                    asteroids.splice(0,asteroids.length);
+                    lives -= 1;
+                    player.xPos = 0;
+                    player.yPos = 0;
+                    this.dead = true;
+                    console.log(asteroids);
+                    */
+                    gameover = true;
+                    dieSFX.play();
+                }
+
+                
+                if(Math.abs(this.xPos) > 305 || this.v === 0 || Math.abs(this.yPos) > 305)
+                {
+                    asteroids.splice(asteroids.indexOf(this), 1);
+                }
+            }
+        }
+
+        function playerObj()
+        {
+            this.x = 0;
+            this.y = -180;
+            this.angle = 0;
+            this.sprite = new Image();
+            this.sprite.src = "Images/ufo.png";
+
+            this.update = function()
+            {
+
+                if(pressedKeys.includes("ArrowLeft"))
+                {
+                    this.angle -= 0.025;
+                    
+                }
+                if(pressedKeys.includes("ArrowRight"))
+                {
+                    this.angle += 0.025;
+                    
+                }
+
+                this.y = 180 * Math.sin(this.angle);
+                this.x = 180 * Math.cos(this.angle);
+
+
+                
+                ctx.save();
+                ctx.translate(this.x,this.y);
+                ctx.rotate(this.angle + (90 * Math.PI/180));
+                ctx.drawImage(this.sprite, -32,-32, 64, 64);
+                ctx.restore();
+
+            }
+        }
+
+        let planet = new planetObj(0,0);
+        let player = new playerObj();
+        var startDate = new Date();
+        let gameover = false;
+        ctx.translate(c.width/2, c.height/2);
+        ctx.strokeStyle = "black";
+        ctx.fillStyle = "white";
+        let spawn = 1;
+        document.addEventListener("keydown", keyDownHandler, false);
+        document.addEventListener("keyup", keyUpHandler, false);
+        setInterval(mainGameFunction, 10);
+
+        function mainGameFunction()
+        {   
+
+            var endDate   = new Date();
+            var seconds = (endDate.getTime() - startDate.getTime());
+            spawn = spawn * -1;
+
+            if(asteroids.length < 10 && spawn === 1 && getRandomInt(0, 1) === 1)
+            {
+                asteroids.push(new asteroidObj(getRandomInt(280, 300),getRandomInt(280, 300)));
+            }
+
+            ctx.clearRect(-c.width, -c.height, c.width * 2, c.height * 2);
+            if(gameover === false)
+            {
+
+                
+                for(var i = 0; i < bullets.length;i++)
+                {
+                    bullets[i].update();
+                }
+
+                for(var i = 0; i < asteroids.length;i++)
+                {
+                    asteroids[i].update();
+                }
+
+                planet.update();
+                player.update();
+                ctx.fillStyle = "black";
+                ctx.font = ctx.font = "bold 18px sans-serif";
+                ctx.fillText("Score: " + score, -c.width/2 + 15, -c.height/2 + 30);
+                let time = Math.round(25 - seconds/1000)
+                if(time <= 10)
+                {
+                    ctx.fillStyle = "red";
+                }
+                if(time < 1)
+                {
+                    gameover = true;
+                }
+                ctx.fillText("Time: " + time, -c.width/2 + 15, -c.height/2 + 50);
+            }
+            else
+            {
+                ctx.fillStyle = "black";
+                ctx.fillRect(-c.width, -c.height, c.width * 2, c.height * 2);
+                ctx.fillStyle = "white";
+                ctx.textAlign = "center";
+                ctx.font = ctx.font = "bold 36px sans-serif";
+                ctx.fillText("Game Over",0,0)
+                ctx.fillText("Final score: " + score,0,40);
+                
+            }
+        }
+        
+        
+        function keyDownHandler(e)
+        {
+
+            if(!pressedKeys.includes(e.key))
+            {
+                pressedKeys.push(e.key);
+            }
+            
+            if(e.key === " ")
+            {
+                
+                if(holdingSpace === false && bullets.length < 1)
+                {
+                    holdingSpace = true;
+                    let dx = 0 - player.x;
+                    let dy = 0 - player.y;
+                    let angle = Math.atan2(dy, dx);
+                    bullets.push(new bulletObj(player.x, player.y, angle));
+                    shootSFX.play();
+                }
+                
+            }
+        }
+
+        function keyUpHandler(e)
+        {
+            
+            if(pressedKeys.includes(e.key))
+            {
+                pressedKeys.splice(pressedKeys.indexOf(e.key), 1);
+            }
+
+            if(e.key === " ")
+            {
+                holdingSpace = false;
+            }
+        }
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,100 @@
+body {
+    background-color: white;
+}
+
+img{
+    width: 70px;
+    height: 70px;
+    position: absolute;
+    right: 10px;
+    top: 10px;
+}
+
+h1{
+    font-family: Arial, Helvetica, sans-serif
+}
+
+h2{
+    font-family: Arial, Helvetica, sans-serif
+}
+
+h3
+{
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+h4
+{
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+h5
+{
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.container{
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.searchWindow{
+    width: 20vw;
+    min-width: 200px;
+    
+    
+}
+
+.searchContainer
+{
+    border: 2px solid black;
+    display: flex;
+    flex-direction: row;
+    margin-bottom: 10px;
+    position: relative;
+    background-color: white;
+}
+
+.logout{
+    position: absolute;
+    right: 10px;
+    top: 30px;
+    
+}
+
+.nameDisp{
+    position: absolute;
+    right: 10px;
+    top: -15px;
+    
+}
+
+.deleteAccount{
+    position: absolute;
+    right: 10px;
+    top: 60px;
+}
+
+
+table, th, td{
+    
+    border: 1px solid black;
+}
+
+table
+{
+    width: 40vw;
+    min-width: 300px;
+    background-color: black;
+}
+
+th,td
+{
+    background-color: white;
+    position: relative;
+    min-height: 130px;
+    height: 12vh;
+}

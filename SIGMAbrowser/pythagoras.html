@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="shapeRender.css">
+</head>
+<body>
+    <h1>Primitive 3D Shape Renderer</h1>
+    <h4 id="usernameDisp">User:</h4>
+
+    <div class="container">
+ 
+        <canvas width="640" height="480" id="gameScreen" style="background-color: black;"></canvas>   
+        
+    </div>
+        
+    <script>
+        let user = {"name": "", "drawing": "", "currentBG": 0};
+        if(localStorage.getItem("username") === null || localStorage.getItem("username") === "logout")
+        {
+            window.location.href = "superUltraMegaSecureWebsite.html";
+        }
+
+        if(localStorage.getItem("SavedPaintings") === null)
+        {
+            let test = [{"name": "", "drawing": "", "currentBG": 0}];
+            localStorage.setItem("SavedPaintings", JSON.stringify(test));
+        }
+
+        user.name = localStorage.getItem("username");
+        document.getElementById("usernameDisp").innerHTML = "User: " + user.name;
+        
+
+
+        let c = document.getElementById("gameScreen");
+        let ctx = c.getContext("2d");
+        
+        let levels = prompt("How many branches?");
+        let angle = prompt("Enter an angle in degrees: ");
+        
+        ctx.translate(c.width/2, c.height/2);
+        ctx.strokeStyle = "white";
+        ctx.fillstyle = "white";
+        
+
+        function drawCube(startX, startY, length, angle, level, maxLev)
+        {
+            level += 1;
+            ctx.save();
+            console.log(angle + "   " + level);
+            ctx.translate(startX,startY);
+            ctx.rotate(angle * Math.PI/180);
+            ctx.beginPath();
+            ctx.moveTo(length/2,0);
+            ctx.lineTo(length/2,length/2);
+            ctx.lineTo(-length/2,length/2);
+            ctx.lineTo(-length/2,-length/2);
+            ctx.lineTo(length/2,-length/2);
+            ctx.lineTo(length/2,0);
+            ctx.fill();
+            ctx.stroke();
+
+            if(length < 5 || level > maxLev)
+            {
+                ctx.restore();
+                return;
+            }
+
+            
+            drawCube(length/2,(-length/2) - length * 0.45 * Math.cos(angle * Math.PI/180),length * 0.6,angle, level, maxLev);
+            drawCube(-length/2,(-length/2) - length * 0.375 * Math.cos(angle * Math.PI/180),length * 0.5,-angle, level, maxLev);
+
+            ctx.restore();
+            return;
+        }
+        drawCube(0,c.height/3,80,angle, 1, levels);
+        drawCube(0,c.height/3,80,angle, 1, levels);
+        
+    </script>
+</body>
+</html>

@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="sticks.css">
+    <script src="FunkyFuncs.js"></script>
+</head>
+<body>
+    <h1>Nim misère: Abridged</h1>
+    <h4 id="usernameDisp">User:</h4>
+    <div class="containerSquared">
+
+        <div class="container">
+            
+            <canvas width="640" height="480" id="gameScreen"></canvas>
+            <table id="userControls">
+                <tr>
+                    <td>
+                        <button id="upload1" onclick="javascript:playerMove(1)">Take 1</button>
+                        <button id="upload2" onclick="javascript:playerMove(2)">Take 2</button>
+                    </td>
+                </tr>
+            </table>
+            
+             
+        </div>
+    </div>
+        
+    <script>
+        let user = {"name": "", "pfp": new Image(), "currentBG": 0};
+
+        if(localStorage.getItem("username") === null || localStorage.getItem("username") === "logout")
+        {
+            window.location.href = "superUltraMegaSecureWebsite.html";
+        }
+
+        
+
+        user.name = localStorage.getItem("username");
+        let loginsList = JSON.parse(localStorage.getItem("logins"));
+        user.pfp.src = "Images/blankPFp.png";
+        for(var i = 0; i < loginsList.length; i++)
+        {
+            if(loginsList[i].user === user.name)
+            {
+                user.pfp.src = loginsList[i].pfp;
+                break;
+            }
+        }
+        
+        document.getElementById("usernameDisp").innerHTML = "User: " + user.name;
+        
+
+
+        let c = document.getElementById("gameScreen");
+        let ctx = c.getContext("2d");
+        let score = 0;
+        let playerTurn = true;
+        let totalSticks = 15;
+        let computerPFP = new Image();
+
+        let takeSticksSFX = new Audio("Audio/pickupStick.wav");
+        let endSFX = new Audio("Audio/end.ogg");
+
+
+        let gameover = false;
+        
+        computerPFP.onload = function()
+        {
+            ctx.drawImage(computerPFP,c.width/2 + 50, 60, 80, 80);
+        }
+
+        computerPFP.src = "Images/blankPFp.png";
+        
+        document.getElementById("upload1").style.visibility = "visible";
+        document.getElementById("upload2").style.visibility = "visible";
+
+        drawUsers();
+
+        for(var i = 0; i < totalSticks; i++)
+        {
+            drawStick(40 + (40 * i));
+        }
+
+        
+        
+        function drawUsers()
+        {
+            if(gameover === true)
+            {
+                return;
+            }
+
+            ctx.fillStyle = "#7B3F00";
+            
+            ctx.fillRect(0,0,c.width, c.height);
+            ctx.clearRect(15,15,c.width - 30, c.height - 30);
+
+            ctx.fillStyle = "White";
+            ctx.textAlign = "right";
+            ctx.font = "20px sans-serif";
+            ctx.drawImage(user.pfp,c.width/2 - 130, 60, 80, 80);
+            ctx.fillText(user.name, c.width/2 - 50, 170);
+            ctx.textAlign = "center";
+            ctx.fillText("- VS -", c.width/2, 170);
+            ctx.textAlign = "left";
+            ctx.drawImage(computerPFP,c.width/2 + 50, 60, 80, 80);
+            ctx.fillText("Computer", c.width/2 + 50, 170);
+            ctx.textAlign = "center";
+            ctx.fillText("Sticks left: " + totalSticks, c.width/2, c.height/8 * 7);
+        }
+
+        function takeSticks(amount, turn)
+        {
+
+            if(gameover === true)
+            {
+                return;
+            }
+
+            takeSticksSFX.play();
+
+            if(totalSticks - amount < 1)
+            {
+                endSFX.play();
+                if(turn === true)
+                {
+                    //alert("Computer wins!");
+                    ctx.fillStyle = "black";
+                    ctx.fillRect(0,0,c.width,c.height);
+                    ctx.fillStyle = "white";
+                    ctx.textAlign = "center";
+                    ctx.font = "30px sans-serif";
+                    ctx.fillText("Computer wins!", c.width/2,c.height/2);
+                }
+                else
+                {
+                    //alert("You win!");
+                    ctx.fillStyle = "black";
+                    ctx.fillRect(0,0,c.width,c.height);
+                    ctx.fillStyle = "white";
+                    ctx.textAlign = "center";
+                    ctx.font = "30px sans-serif";
+                    ctx.fillText("You win!", c.width/2,c.height/2);
+                }
+                gameover = true;
+                return;
+            }
+            
+            totalSticks -= amount;
+            ctx.clearRect(0, 0, c.width, c.height);
+            drawUsers();
+            for(var i = 0; i < totalSticks; i++)
+            {
+                
+                drawStick(40 + (40 * i));
+            }
+            
+            
+            console.log(totalSticks);
+            return 0;
+        }
+
+        function playerMove(amount)
+        {
+            if(gameover === true)
+            {
+                return;
+            }
+
+            console.log(document.getElementById("upload1").style.visibility);
+
+            if(playerTurn === false || document.getElementById("upload1").style.visibility != "visible")
+            {
+                return;
+            }
+            
+            playerTurn = false;
+
+            document.getElementById("upload1").style.visibility = "hidden";
+            document.getElementById("upload2").style.visibility = "hidden";
+
+            let meaninglessvar = takeSticks(amount, true);
+
+            superAdvancedAI();
+        }
+
+        async function delay(ms) {
+            // return await for better async stack trace support in case of errors.
+            
+            return new Promise(resolve => {setTimeout(() => {
+                document.getElementById("upload1").style.visibility = "hidden";
+                document.getElementById("upload2").style.visibility = "hidden";
+            }, ms);});
+        }
+
+        
+
+        function superAdvancedAI()
+        {
+            
+            if(gameover === true)
+            {
+                return;
+            }
+
+            playerTurn = false;
+
+            
+            setTimeout(setTimeout(waitUpYo,200),100);
+            
+            
+
+            function waitUpYo()
+            {
+                ctx.fillStyle = "red";
+                ctx.textAlign = "center";
+                ctx.font = "bold 48px sans-serif";
+                ctx.clearRect(0, 0, c.width, c.height);
+                ctx.clearRect(0, 0, c.width, c.height);
+                ctx.fillText("Thinking....", c.width/2, c.height/2);
+                document.getElementById("upload1").style.visibility = "hidden";
+                document.getElementById("upload2").style.visibility = "hidden";
+            }
+            
+            
+            
+            setTimeout(waited,1200);
+
+            function waited()
+            {
+                
+                ctx.clearRect(0, 0, c.width, c.height);
+                document.getElementById("upload1").style.visibility = "visible";
+                document.getElementById("upload2").style.visibility = "visible";
+                if(totalSticks > 5)
+                {
+                    let meaninglessvar = takeSticks(getRandomInt(1,2),false);
+                }
+                else if(totalSticks === 5)
+                {  
+                    let meaninglessvar = takeSticks(1,false);
+                }
+                else if(totalSticks === 4)
+                {
+                    let meaninglessvar = takeSticks(getRandomInt(1,2),false);
+                }
+                else if(totalSticks === 3)
+                {  
+                    let meaninglessvar = takeSticks(2,false);
+                }
+                else if(totalSticks === 2)
+                {
+                    let meaninglessvar = takeSticks(1,false);
+                }
+                else if(totalSticks < 2)
+                {
+                    let meaninglessvar = takeSticks(1,false);
+                }
+            }
+
+            
+            
+
+            
+
+            
+            playerTurn = true;
+        }
+        
+        function drawStick(x)
+        {
+            if(gameover === true)
+            {
+                return;
+            }
+            
+            ctx.beginPath();
+            ctx.strokeStyle = "black";
+            ctx.fillStyle = "#C8AD7F";
+            ctx.fillRect(x - 2.5, c.height/2 - 10, 5, 80);
+            ctx.strokeRect(x - 2.5, c.height/2 - 10, 5, 80);
+            
+            //ctx.stroke();
+
+            ctx.fillStyle = "#D22B2B";
+            ctx.beginPath();
+            ctx.arc(x, c.height/2 - 10, 7.5, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.stroke(); 
+        }
+        
+
+    </script>
+</body>
+</html>

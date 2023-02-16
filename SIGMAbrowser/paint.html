@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="paint.css">
+</head>
+<body>
+    <h1>Paint.js</h1>
+    <h4 id="usernameDisp">User:</h4>
+
+    <audio controls loop autoplay hidden>
+        <source src="audio/marioPaint.mp3" type="audio/mpeg">
+    </audio>
+
+    <div class="container">
+        <table>
+            <tr>
+                <th>Key</th>
+                <th>Color</th>
+            </tr>
+            <tr>
+                <td>1</td>
+                <td>Black</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>Red</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>Blue</td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td>Green</td>
+            </tr>
+            <tr>
+                <td>5</td>
+                <td>Yellow</td>
+            </tr>
+            <tr>
+                <td>6</td>
+                <td>Orange</td>
+            </tr>
+            <tr>
+                <td>7</td>
+                <td>Purple</td>
+            </tr>
+            <tr>
+                <td>8</td>
+                <td>White</td>
+            </tr>
+            <tr>
+                <td>E</td>
+                <td>Eraser</td>
+            </tr>
+            <tr>
+                <td>R</td>
+                <td>Clear Screen</td>
+            </tr>
+            <tr>
+                <td>B</td>
+                <td>Change Background (Will clear screen)</td>
+            </tr>
+            <tr>
+                <td>C</td>
+                <td>Change brush size</td>
+            </tr>
+            <tr>
+                <td><button id="download">Download</button><button id="saveToCloud">Save online</button></td>
+                <td><canvas width="200%" height="30px" id="sizeDisplay" class="sizeDisplay"></canvas></td>
+            </tr>
+            
+        </table>
+        <canvas width="640" height="480" id="gameScreen"></canvas>
+    </div>
+    
+    <script>
+        let user = {"name": "", "drawing": "", "currentBG": 0};
+        if(localStorage.getItem("username") === null || localStorage.getItem("username") === "logout")
+        {
+            window.location.href = "superUltraMegaSecureWebsite.html";
+        }
+
+        if(localStorage.getItem("SavedPaintings") === null)
+        {
+            let test = [{"name": "", "drawing": "", "currentBG": 0}];
+            localStorage.setItem("SavedPaintings", JSON.stringify(test));
+        }
+
+        user.name = localStorage.getItem("username");
+        document.getElementById("usernameDisp").innerHTML = "User: " + user.name;
+        let userExists = false;
+        let SavedPaintings = JSON.parse(localStorage.getItem("SavedPaintings"));
+        for(let i = 0; i < SavedPaintings.length; i++)
+        {
+            if(SavedPaintings[i].name === user.name)
+            {
+                user.drawing = SavedPaintings[i].drawing;
+                user.currentBG = SavedPaintings[i].currentBG;
+                userExists = true;
+                break;
+            }
+        }
+
+
+        let c = document.getElementById("gameScreen");
+        let ctx = c.getContext("2d");
+        let sizeDisplay = document.getElementById("sizeDisplay");
+        let sizeCTX = sizeDisplay.getContext("2d");
+        const download = document.getElementById('download');
+        const saveOnlineButton = document.getElementById("saveToCloud");
+        let mouseDown = false;
+        let size = 5;
+        const colors = {
+
+            black:"#000000",
+            red:"#FF0000",
+            blue:"#0000FF",
+            green:"#008000",
+            yellow:"#FFFF00",
+            orange:"#FFBF00",
+            purple:"#BF00FF",
+            erase:"erase",
+            white:"#FFFFFF"
+
+        }
+
+        let bgImages = [new Image(), new Image(), new Image(), new Image(), new Image(), new Image(), new Image(), new Image(), new Image(), new Image()];
+
+        bgImages[0].src = 'images/blank.png';
+        bgImages[1].src = 'images/calc(1).png';
+        bgImages[2].src = 'images/CLASSROOM.png';
+        bgImages[3].src = 'images/court.jpg';
+        bgImages[4].src = 'images/ezgif-4-1d7d1fdf75.png';
+        bgImages[5].src = 'images/heck.jpg';
+        bgImages[6].src = 'images/idiotB.png';
+        bgImages[7].src = 'images/idiotW.png';
+        bgImages[8].src = 'images/image.jpg';
+        bgImages[9].src = 'images/stars.gif';
+
+        let currentBg = 0;
+        let paintX = 0;
+        let paintY = 0;
+
+        let color = colors.black; 
+        
+        var BB = c.getBoundingClientRect();
+        var BBoffsetX= BB.left;
+        var BBoffsetY= BB.top;
+        window.onscroll=function(e){ setBB(); }
+        window.onresize=function(e){ setBB(); }
+        c.onmousedown=handleMousedown;
+        c.onmouseup=handleMouseUpOut;
+        c.onmouseout=handleMouseUpOut;
+
+        document.addEventListener('mousemove', mouseMoveHandler,false);
+
+        document.addEventListener("keydown", keyDownHandler, false);
+
+        download.addEventListener('click', function(e) {
+            console.log(c.toDataURL());
+            const link = document.createElement('a');
+            link.download = 'download.png';
+            link.href = c.toDataURL();
+            console.log(c.toDataURL());
+            link.click();
+            link.delete;
+        });
+
+        saveOnlineButton.addEventListener('click', function(e) {
+            console.log(c.toDataURL());
+            let listOfUsers = JSON.parse(localStorage.getItem("SavedPaintings"));
+            let exists = false;
+            for(var i = 0; i < listOfUsers.length; i++)
+            {
+                if(listOfUsers[i].name === user.name)
+                {
+                    listOfUsers[i].drawing = c.toDataURL();
+                    listOfUsers[i].currentBG = currentBg;
+                    console.log(currentBg + "          " + listOfUsers[i].currentBG);
+                    exists = true;
+                    break;
+                }
+            }
+
+            if(exists === false)
+            {
+                user.drawing = c.toDataURL();
+                user.currentBG = currentBg;
+                console.log(currentBg + "          " + user.currentBG);
+                listOfUsers.push(user);
+            }
+
+            localStorage.setItem("SavedPaintings", JSON.stringify(listOfUsers));
+
+            /* skriv kod för att spara i JSON här*/
+            
+        });
+
+        ctx.fillStyle = "white";
+        ctx.fillRect(0,0,640,480);
+
+        if(userExists === true)
+        {
+            if(confirm("It looks like you have a drawing saved! Would you like to load it?"))
+            {
+                let loadedImg = new Image();
+                loadedImg.onload = function()
+                {
+                    ctx.drawImage(loadedImg, 0,0, 640, 480);
+                }
+                loadedImg.src = user.drawing;
+                currentBg = user.currentBG;
+                console.log(currentBg + "          " + user.currentBG);
+            }
+        }
+
+        setInterval(mainGameFunction, 1);
+
+        function mainGameFunction()
+        {
+            sizeCTX.clearRect(0,0, sizeDisplay.width, sizeDisplay.height);
+            sizeCTX.fillStyle = "black";
+            sizeCTX.font = "25px Comic Sans";
+            var sizeText = "Size: " + size;
+            sizeCTX.fillText(sizeText, sizeDisplay.width/2, sizeDisplay.height/5 * 4);
+            if(mouseDown === true)
+            {
+                drawPixel(paintX,paintY,size, color);
+            }   
+        }
+        
+        function getRandomInt(min, max) {
+            min = Math.ceil(min);
+            max = Math.floor(max);
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+        
+        
+
+        function drawPixel( x, y, size, color)
+        {
+            ctx.fillStyle = color;
+
+            if(color != colors.erase)
+            {
+                ctx.fillRect(x - size/2, y - size/2, size, size);
+            }
+            else
+            {
+                let xperc = x/640;
+                let yperc = y/480;
+                let sXperc = size/640;
+                let sYperc = size/480;
+
+                ctx.drawImage(bgImages[currentBg],bgImages[currentBg].width * xperc - (bgImages[currentBg].width * sXperc)/2, bgImages[currentBg].height * yperc - (bgImages[currentBg].height * sYperc)/2, bgImages[currentBg].width * sXperc, bgImages[currentBg].height * sYperc,x - size/2,y - size/2,size,size);
+            }
+        }
+
+        function keyDownHandler(e)
+        {
+            if(e.key === "1")
+            {
+                color = colors.black;
+            }
+            if(e.key === "2")
+            {
+                color = colors.red;
+            }
+            if(e.key ==="3")
+            {
+                color = colors.blue;
+            }
+            if(e.key ==="4")
+            {
+                color = colors.green;
+            }
+            if(e.key ==="5")
+            {
+                color = colors.yellow;
+            }
+            if(e.key ==="6")
+            {
+                color = colors.orange;
+            }
+            if(e.key ==="7")
+            {
+                color = colors.purple;
+            }
+            if(e.key === "8")
+            {
+                color = colors.white;
+            }
+
+            if(e.key === "b")
+            {
+                currentBg += 1;
+                if(currentBg > 9)
+                {
+                    currentBg = 0;
+                }
+                ctx.drawImage(bgImages[currentBg], 0,0, 640, 480);
+            }
+
+            if(e.key === "c")
+            {
+                size += 5;
+                if(size > 30)
+                {
+                    size = 5;
+                }
+            }
+
+            if(e.key === "e")
+            {
+                color = colors.erase;
+            }
+
+            if(e.key === "r")
+            {
+                ctx.clearRect(0, 0, 640, 480);
+                ctx.drawImage(bgImages[currentBg], 0,0, 640, 480);
+            }
+        }
+
+        
+
+        function setBB(){
+            BB = c.getBoundingClientRect();
+            BBoffsetX=BB.left;
+            BBoffsetY=BB.top;
+        }   
+
+
+        function mouseMoveHandler(e)
+        {
+            var mouseX=parseInt(e.clientX-BBoffsetX);
+            var mouseY=parseInt(e.clientY-BBoffsetY);
+
+            paintX = mouseX;
+            paintY = mouseY;
+        }
+
+        function handleMousedown(e){
+            // calculate the mouse position RELATIVE TO THE CANVAS
+            mouseDown = true;
+            
+        }
+
+        function handleMouseUpOut(e){
+            // tell the browser we're handling this event
+            e.preventDefault();
+            e.stopPropagation();
+            mouseDown = false;
+        }
+    </script>
+</body>
+</html>

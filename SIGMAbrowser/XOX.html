@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="XOX.css">
+    <script src="FunkyFuncs.js"></script>
+</head>
+<body>
+    <h1>XOX: Abridged</h1>
+    <h4 id="usernameDisp">User:</h4>
+    <div class="containerSquared">
+
+        <div class="container">
+            
+            <canvas width="560" height="560" id="gameScreen"></canvas>
+            
+            
+             
+        </div>
+    </div>
+        
+    <script>
+        let user = {"name": "", "pfp": new Image(), "currentBG": 0};
+
+        if(localStorage.getItem("username") === null || localStorage.getItem("username") === "logout")
+        {
+            window.location.href = "superUltraMegaSecureWebsite.html";
+        }
+
+        
+
+        user.name = localStorage.getItem("username");
+        let loginsList = JSON.parse(localStorage.getItem("logins"));
+        user.pfp.src = "Images/blankPFp.png";
+        for(var i = 0; i < loginsList.length; i++)
+        {
+            if(loginsList[i].user === user.name)
+            {
+                user.pfp.src = loginsList[i].pfp;
+                break;
+            }
+        }
+        
+        document.getElementById("usernameDisp").innerHTML = "User: " + user.name;
+        
+
+
+        let c = document.getElementById("gameScreen");
+        let ctx = c.getContext("2d");
+        let score = 0;
+        let playerTurn = true;
+        const board = [
+            ["0","0","0"],
+            ["0","0","0"],
+            ["0","0","0"]
+            
+        ];
+        console.log(board);
+        let gameover = false;
+        
+        let mouseX = 0;
+        let mouseY = 0;
+        var BB = c.getBoundingClientRect();
+        var BBoffsetX= BB.left;
+        var BBoffsetY= BB.top;
+        window.onscroll=function(e){ setBB(); }
+        window.onresize=function(e){ setBB(); }
+        c.onmousedown=handleMousedown;
+
+        document.addEventListener('mousemove', mouseMoveHandler,false);
+
+        for(var i = 1; i < 3; i++)
+        {
+            ctx.strokeStyle = "white";
+            ctx.beginPath();
+            ctx.moveTo(c.width/3 * i, 0);
+            ctx.lineTo(c.width/3 * i, c.height);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(0,c.height/3 * i);
+            ctx.lineTo(c.width, c.height/3 * i);
+            ctx.strokeRect(0,0,c.width,c.height);
+            ctx.stroke();
+        }
+
+
+        
+        ctx.clearRect(0,0,c.width,c.height);
+        for(var i = 1; i < 3; i++)
+        {
+            ctx.strokeStyle = "white";
+            ctx.beginPath();
+            ctx.moveTo(c.width/3 * i, 0);
+            ctx.lineTo(c.width/3 * i, c.height);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(0,c.height/3 * i);
+            ctx.lineTo(c.width, c.height/3 * i);
+            ctx.strokeRect(0,0,c.width,c.height);
+            ctx.stroke();
+        }
+        
+
+        
+
+        function checkWin(character, field)
+        {
+            if(JSON.stringify(field[0]) === JSON.stringify([character,character,character]) || JSON.stringify(field[1]) === JSON.stringify([character,character,character]) || JSON.stringify(field[2]) === JSON.stringify([character,character,character]))
+            {
+                console.log(character + "  wins!");
+                return true;
+            }
+            else if(field[0][0] === character && field[1][0] === character && field[2][0] === character)
+            {
+                console.log(character + "  wins!");
+                return true;
+            }
+            else if(field[0][1] === character && field[1][1] === character && field[2][1] === character)
+            {
+                console.log(character + "  wins!");
+                return true;
+            }
+            else if(field[0][2] === character && field[1][2] === character && field[2][2] === character)
+            {
+                console.log(character + "  wins!");
+                return true;
+            }
+            else if(field[0][0] === character && field[1][1] === character && field[2][2] === character)
+            {
+                console.log(character + "  wins!");
+                return true;
+            }
+            else if(field[0][2] === character && field[1][1] === character && field[2][0] === character)
+            {
+                console.log(character + "  wins!");
+                
+                return true;
+            }
+            return false;
+        }
+
+        function drawBoard()
+        {
+            ctx.clearRect(0,0,c.width,c.height);
+            for(var i = 1; i < 3; i++)
+            {
+                ctx.strokeStyle = "white";
+                ctx.beginPath();
+                ctx.moveTo(c.width/3 * i, 0);
+                ctx.lineTo(c.width/3 * i, c.height);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(0,c.height/3 * i);
+                ctx.lineTo(c.width, c.height/3 * i);
+                ctx.strokeRect(0,0,c.width,c.height);
+                ctx.stroke();
+            }
+
+            for(var i = 0; i < board.length; i++)
+            {
+                for(var j = 0; j < board[i].length; j++)
+                {
+                    let x = (j * c.width/3) + c.width/6;
+                    let y = (i * c.height/3) + c.height/6;
+
+                    if(board[i][j] === "X")
+                    {
+                        ctx.beginPath();
+                        ctx.moveTo(x - 50, y - 50);
+                        ctx.lineTo(x + 50, y + 50);
+                        ctx.moveTo(x + 50, y - 50);
+                        ctx.lineTo(x - 50, y + 50);
+                        ctx.stroke();
+                    }
+                    if(board[i][j] === "O")
+                    {
+                        ctx.strokeStyle = "white";
+                        ctx.beginPath();
+                        ctx.arc(x, y, 50, 0, 2 * Math.PI);
+                        ctx.stroke(); 
+                    }
+                    
+                }
+            }
+
+            
+        }
+
+        function superAdvancedAI()
+        {
+            
+            console.log(gameover);
+            console.log(playerTurn);
+            if(gameover === true)
+            {
+                return;
+            }
+
+            
+            let row = 0;
+            let column = 0;
+            console.log(board);
+            let tempField = [
+                ["0","0","0"],
+                ["0","0","0"],
+                ["0","0","0"]
+            ]
+            tempField = board.slice(0);
+            console.log(board);
+            console.log(tempField);
+            /* [y, x]*/
+            let openSpots = [];
+            let winningSpots = [];
+
+            for(var i = 0; i < tempField.length; i++)
+            {
+                console.log("224");
+                for(var j = 0; j < board[i].length; j++)
+                {
+
+                    if(board[i][j] === "0" && board[i][j] != "O" && board[i][j] != "X")
+                    {
+                        openSpots.push([i, j]);
+                        console.log(board[i][j]);
+                    }
+                    else
+                    {
+                        console.log("pog");
+                    }
+                    
+                }
+            }
+
+            for(var i = 0; i < openSpots.length; i++)
+            {
+                
+                tempField = [
+                    [],
+                    [],
+                    []
+                ];
+                
+                tempField[0] = board[0].toString().split(",");
+                tempField[1] = board[1].toString().split(",");
+                tempField[2] = board[2].toString().split(",");
+                console.log(tempField);
+                
+                let x = openSpots[i][1];
+                let y = openSpots[i][0];
+                tempField[y][x] = "O";
+                //console.log(tempField);
+                winningSpots.push(checkWin("O",tempField));
+                console.log(winningSpots);
+                //console.log(winningSpots);
+            }
+
+            let canWinNow = false;
+            for(var i = 0; i < winningSpots.length; i++)
+            {
+                if(winningSpots[i] === true)
+                {
+                    console.log(i);
+                    canWinNow = true;
+                    row = openSpots[i][0];
+                    column = openSpots[i][1];
+                    break;
+                }
+            }
+            
+            if(canWinNow === false)
+            {
+                console.log(openSpots);
+                if(openSpots.length < 1)
+                {
+                    gameover = true;
+                    return;
+                }
+                row = openSpots[getRandomInt(0, openSpots.length - 1)][0];
+                column = openSpots[getRandomInt(0, openSpots.length - 1)][1];
+            }
+            
+            
+            console.log(playerTurn)
+            if(gameover === false)
+            {
+                if(canWinNow === false)
+                {
+                    console.log(openSpots);
+                    if(openSpots.length < 1)
+                    {
+                        gameover = true;
+                        return;
+                    }
+                    row = openSpots[getRandomInt(0, openSpots.length - 1)][0];
+                    column = openSpots[getRandomInt(0, openSpots.length - 1)][1];
+                }
+                console.log(board[row][column]);
+                console.log(board);
+                board[row][column] = "O";
+                console.log(board[row][column]);
+            }
+
+            if(checkWin("O", board) === true)
+            {
+                gameover = true;
+                ctx.textAlign = "center";
+                ctx.fillStyle = "black";
+                ctx.fillRect(0,0,c.width,c.height);
+                ctx.font = "bold 48px serif";
+                ctx.fillStyle = "white";
+                ctx.fillText("You win!", c.width/2,c.height/2);
+                return;
+            }
+            playerTurn = true;
+            drawBoard();
+        
+            
+        }
+
+        function tempMoveAI()//old
+        {
+            
+            if(gameover === true)
+            {
+                return;
+            }
+
+            playerTurn = false;
+
+            
+            setTimeout(waitUpYo,300);
+            
+            
+
+            function waitUpYo()
+            { 
+                let row = 0;
+                let column = 0;
+                let maxWait = 100;
+                let waitedTime = 0;
+                while(board[row][column] === "O" || board[row][column] === "X" || waitedTime < maxWait)
+                {
+                    waitedTime += 1;
+                    if(waitedTime > maxWait)
+                    {
+                        let exists = false;
+                        for(var i = 0; i < board.length; i++)
+                        {
+                            for(var j = 0; j < board[i].length; j++)
+                            {
+
+                                if(board[i][j] === "0")
+                                {
+                                    exists = true;
+                                    row = i;
+                                    column = j;
+                                    break;
+                                }
+                                
+                            }
+                        }
+                        if(exists === false)
+                        {
+                            gameover = true;
+                        }
+                        break;
+                    }
+                    //console.log(waitedTime);
+                    row = getRandomInt(0,2);
+                    column = getRandomInt(0,2);
+                }
+
+                if(playerTurn === false && gameover === false)
+                {
+                    board[row][column] = "O";
+                }
+                if(checkWin("O", board) === true)
+                {
+                    gameover = true;
+                    ctx.textAlign = "center";
+                    ctx.fillStyle = "black";
+                    ctx.fillRect(0,0,c.width,c.height);
+                    ctx.font = "bold 48px serif";
+                    ctx.fillStyle = "white";
+                    ctx.fillText("You win!", c.width/2,c.height/2);
+                    return;
+                }
+                playerTurn = true;
+                drawBoard();
+            }
+            
+        }
+        
+        
+        function setBB(){
+            BB = c.getBoundingClientRect();
+            BBoffsetX=BB.left;
+            BBoffsetY=BB.top;
+        }   
+
+
+        function mouseMoveHandler(e)
+        {
+            mouseX=parseInt(e.clientX-BBoffsetX);
+            mouseY=parseInt(e.clientY-BBoffsetY);
+
+            
+        }
+
+        function handleMousedown(e)
+        {
+            if(gameover === true || playerTurn === false)
+            {
+                return;
+            }
+
+            let row = 0;
+            let column = 0;
+            
+            if(mouseX > 5 && mouseY > 5 && mouseX < 185 && mouseY < 185)
+            {
+                row = 0;
+                column = 0;
+            }
+            if(mouseX > 190 && mouseY > 5 && mouseX < 370 && mouseY < 185)
+            {
+                row = 0;
+                column = 1;
+            }
+            if(mouseX > 375 && mouseY > 5 && mouseX < 555 && mouseY < 185)
+            {
+                row = 0;
+                column = 2;
+            }
+            
+            if(mouseX > 5 && mouseY > 190 && mouseX < 185 && mouseY < 365)
+            {
+                row = 1;
+                column = 0;
+            }
+            if(mouseX > 190 && mouseY > 190 && mouseX < 370 && mouseY < 365)
+            {
+                row = 1;
+                column = 1;
+            }
+            if(mouseX > 375 && mouseY > 190 && mouseX < 555 && mouseY < 365)
+            {
+                row = 1;
+                column = 2;
+            }
+
+            if(mouseX > 5 && mouseY > 365 && mouseX < 185 && mouseY < 545)
+            {
+                row = 2;
+                column = 0;
+            }
+            if(mouseX > 190 && mouseY > 365 && mouseX < 370 && mouseY < 545)
+            {
+                row = 2;
+                column = 1;
+            }
+            if(mouseX > 375 && mouseY > 365 && mouseX < 555 && mouseY < 545)
+            {
+                row = 2;
+                column = 2;
+            }
+            console.log(mouseX + "  " + mouseY + "   " + row + "   " + column);
+            if(board[row][column] != "X" && board[row][column] != "O")
+            {
+                
+                board[row][column] = "X";
+                console.log("gaming");
+                if(checkWin("X", board) === true)
+                {
+                    gameover = true;
+                    ctx.textAlign = "center";
+                    ctx.fillStyle = "black";
+                    ctx.fillRect(0,0,c.width,c.height);
+                    ctx.font = "bold 48px serif";
+                    ctx.fillStyle = "white";
+                    ctx.fillText("You win!", c.width/2,c.height/2);
+                    return;
+                }
+                playerTurn = false;
+                drawBoard();
+                superAdvancedAI();
+            }
+
+            //alert("x: " + mouseX + "  " + "y: " + mouseY);
+        }
+        
+        
+
+    </script>
+</body>
+</html>

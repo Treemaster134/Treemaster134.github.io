@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Le funny game</h1>
+
+    <audio controls autoplay hidden>
+        <source src="music.mp3" type="audio/mpeg">
+    </audio>
+
+    <div class="container">
+        <canvas width="640" height="480" id="gameScreen"></canvas>
+    </div>
+    
+    <script>
+        
+        let username = "";
+        let highScore = 0;
+        let highScoreName = "";
+        if(localStorage.getItem("username") === null || localStorage.getItem("username") === "logout")
+        {
+            window.location.href = "superUltraMegaSecureWebsite.html";
+        }
+        else
+        {
+            username = localStorage.getItem("username");
+        }
+
+        if(localStorage.getItem("basketHighScore") != null)
+        {
+            console.log(localStorage.getItem("basketHighScore"));
+            highScore = parseInt(localStorage.getItem("basketHighScore"));
+            console.log(highScore);
+        }
+
+        if(localStorage.getItem("basketHighScoreName") != null)
+        {
+            highScoreName = localStorage.getItem("basketHighScoreName");
+        }
+        else
+        {
+            localStorage.setItem("basketHighScoreName", "Guest");
+            highScoreName = localStorage.getItem("basketHighScoreName");
+        }
+        
+        let c = document.getElementById("gameScreen");
+        let ctx = c.getContext("2d");
+        
+        let player = new Image();
+        let ball = new Image();
+        let cloud = new Image();
+        let idiotB = new Image();
+        let idiotW = new Image();
+        let jump = new Audio("audio/skjut.mp3");
+        let goal = new Audio("audio/vinst.mp3");
+        let miss = new Audio("audio/miss.mp3");
+        let idiotMusic = new Audio("audio/idiot.mp3");
+        idiotMusic.loop = true;
+        
+        let forceX = 0;
+        let forceY = 0;
+
+        let velX = 0;
+        let velY = 0;
+        let ballY = 320;
+        let ballX = 30;
+        let ballShot = false;
+        
+        let netY = 200;
+        let netX = 500;
+
+        let score = 0;
+        let missed = 0; 
+        let airtime = 0;
+        let playerY = 334;
+        let bOrW = 0;
+        let lastLoop = new Date();
+        let frameCounts = [];
+        let printFPS = 0;
+
+        let spacePressed = false;
+        let rightPressed = false;
+        let leftPressed = false;
+        let upPressed = false;
+        let downPressed = false;
+        var keysAllowed = {up:true, down:true,left:true,right:true};
+
+        document.addEventListener("keydown", keyDownHandler, false);
+        document.addEventListener("keyup", keyUpHandler, false);
+
+        player.onload = function()
+        {
+            ctx.drawImage(player, 0, playerY);
+        }
+        
+        player.src = "images/player.png";
+
+        cloud.onload = function()
+        {
+            ctx.drawImage(cloud, 0, 0);
+        }
+        
+        cloud.src = "images/cloud.png";
+
+        ball.onload = function()
+        {
+            ctx.drawImage(ball, ballX, ballY);
+        }
+
+        ball.src = "images/ball.png";
+
+        idiotB.onload = function()
+        {
+            ctx.drawImage(idiotB, 0, 0);
+        }
+
+        idiotB.src = "images/idiotB.png";
+
+        idiotW.onload = function()
+        {
+            ctx.drawImage(idiotW, 0, 0);
+        }
+
+        idiotW.src = "images/idiotW.png";
+
+        setInterval(mainGameFunction, 10);
+
+        function mainGameFunction()
+        {
+            if(spacePressed === true)
+            {
+                spacePressed = false;
+                shootBall();
+            }
+            draw();
+        }
+        
+        function keyDownHandler(e)
+        {
+            
+            if (e.key === "Right" || e.key === "ArrowRight") {
+                if(keysAllowed.right === true)
+                {
+                    keysAllowed.right = false;
+                    rightPressed = true;
+                }
+            } else if (e.key === "Left" || e.key === "ArrowLeft") {
+                if(keysAllowed.left === true)
+                {
+                    keysAllowed.left = false;
+                    leftPressed = true;
+                }
+            }
+            else if (e.key === "Up" || e.key === "ArrowUp") {
+                if(keysAllowed.up === true)
+                {
+                    keysAllowed.up = false;
+                    upPressed = true;
+                }
+            } else if (e.key === "Down" || e.key === "ArrowDown") {
+                if(keysAllowed.down === true)
+                {
+                    keysAllowed.down = false;
+                    downPressed = true;
+                }
+            }
+            else if (e.key === " " && ballShot === false)
+            {
+                spacePressed = true;
+            }
+        }
+
+        function keyUpHandler(e)
+        {
+            if (e.key === "Right" || e.key === "ArrowRight") {
+                rightPressed = false;
+                keysAllowed.right = true;
+            } else if (e.key === "Left" || e.key === "ArrowLeft") {
+                leftPressed = false;
+                keysAllowed.left = true;
+            }
+            else if (e.key === "Up" || e.key === "ArrowUp") {
+                upPressed = false;
+                keysAllowed.up = true;
+            } else if (e.key === "Down" || e.key === "ArrowDown") {
+                downPressed = false;
+                keysAllowed.down = true;
+            }
+            else if(e.key === " ")
+            {
+                spacePressed = false;
+            }
+        }
+
+        function draw()
+        {
+            ctx.textAlign = "left";
+            ctx.clearRect(0, 0, 640, 480);
+
+            ctx.fillStyle = "#6495ED";
+            ctx.fillRect(0, 0, 740, 580);
+            ctx.fillStyle = "SeaGreen";
+            ctx.fillRect(0, 400, 740, 580);
+
+            if (rightPressed && forceX < 10) {
+                forceX += 1;
+                rightPressed = false;
+            } 
+            else if (leftPressed && forceX > 0) {
+                forceX -= 1;
+                leftPressed = false;
+            }
+            else if (upPressed && forceY < 20) {
+                forceY += 1;
+                upPressed = false;
+            } 
+            else if (downPressed && forceY > 0) {
+                forceY -= 1;
+                downPressed = false;
+                
+            }
+
+            if(airtime > 0)
+            {
+                playerY = 314;
+                airtime -= 1;
+            } 
+            else if(airtime < 1)
+            {
+                playerY = 334;
+            }
+
+            ctx.drawImage(player, 0, playerY);
+
+            if (ballShot === true)
+            {
+                
+                ballX += velX;
+                ballY += velY;
+
+                velY += 0.5;
+
+                ctx.drawImage(ball, ballX, ballY);
+
+                if(ballX > netX && ballX < netX + 120)
+                {
+                    if(ballY > netY && ballY < netY + 30)
+                    {
+                        goal.play();
+                        resetBall();
+                        score += 1;
+                        moveNet();
+                    }
+                }
+
+                if (ballY < 5)
+                {
+                    ctx.fillStyle = "red";
+                    ctx.beginPath();
+                    ctx.moveTo(ballX - 20, 40);
+                    ctx.lineTo(ballX + 20, 40);
+                    ctx.lineTo(ballX, 20);
+                    ctx.fill();   
+                    ctx.fillRect(ballX - 5, 40, 10, 30)
+                }
+
+                if(ballX > 640 || ballY > 480)
+                {
+                    miss.play();
+                    missed += 1;
+                    ballShot = false;
+                }
+
+            }
+            else if(ballShot === false)
+            {
+                ctx.strokeStyle = 'white';
+                ctx.lineWidth = 5;
+                ctx.beginPath();
+                ctx.moveTo(40, 355);
+                ctx.lineTo(40 + forceX * 10, 355 - forceY * 10);
+                ctx.stroke();
+                ctx.drawImage(ball, 30, 320);
+            }
+            
+            ctx.fillStyle = "white";
+            ctx.fillText("Lives:", 10, 450);
+            for(let i = 0; i < 3 - missed; i++)
+            {   
+                ctx.drawImage(ball, 65 + 25 * i, 430, 25, 25);
+            }
+            
+            drawNet();
+            ctx.drawImage(cloud, -40, -20, 190, 150);
+            ctx.font = "20px Comic Sans";
+            //ctx.textAlign = "center";
+            ctx.fillStyle = "Black";
+            ctx.fillText("Force X: " + forceX, 5, 35);
+            ctx.fillText("Force Y: " + forceY, 5, 55);
+            ctx.fillText("Score: " + score, 5, 75);
+
+            
+            var thisloop = new Date();
+            var fps = Math.round(1000 / (thisloop - lastLoop));
+            lastLoop = thisloop;
+
+            if(frameCounts.length < 10)
+            {
+                frameCounts.push(fps);
+            }
+            else if(frameCounts.length > 9)
+            {
+                var finalFPS = 0;
+                for(let i = 0; i < frameCounts.length; i++)
+                {   
+                    finalFPS += frameCounts[i];
+                }
+                printFPS = Math.round(finalFPS / frameCounts.length);
+                frameCounts = [];
+            }
+            
+            ctx.fillText("Fps: " + printFPS, 5, 95);
+            ctx.textAlign = "right";
+            ctx.fillStyle = "white";
+            ctx.fillText("Leader: " + username, (c.width/6 * 6) - 10, 20);
+            
+            if(missed > 2)
+            {
+                if(idiotMusic.paused)
+                {
+                    idiotMusic.play();
+                }
+
+                if(bOrW < 100)
+                {
+                    ctx.drawImage(idiotW, 0, 0, 640, 480);
+                    bOrW += 1;
+                }
+                else if(bOrW > 99)
+                {
+                    ctx.drawImage(idiotB, 0, 0, 640, 480);
+                    bOrW += 1;
+                }
+                if(bOrW > 200)
+                {
+                    bOrW = 0;
+                }
+                ctx.textAlign = "center";
+                ctx.fillStyle = "red";
+                ctx.fillText("Your score: " + score, c.width/2, c.height/4);
+                if(score > highScore)
+                {
+                    highScore = score;
+                    localStorage.setItem("basketHighScore", highScore);
+                    highScoreName = username;
+                    localStorage.setItem("basketHighScoreName", highScoreName);
+                    console.log(highScoreName + "    " + username);
+                }
+                ctx.fillText("User: " + highScoreName, c.width/2, (c.height/4) + 60);
+                ctx.fillText("High score: " + parseInt(highScore), c.width/2, (c.height/4) + 30);
+                
+            }
+
+        }
+        
+        function drawNet()
+        {
+            ctx.fillStyle = "Red";
+            ctx.fillRect(netX, netY, 120, 20);
+            ctx.fillStyle = "white";
+            ctx.beginPath();
+            ctx.moveTo(netX, netY + 20);
+            ctx.lineTo(netX +  50, netY + 100);
+            ctx.lineTo(netX +  100, netY + 20);
+            ctx.fill();
+
+            ctx.fillStyle = "#6495ED";
+            ctx.fillRect(netX, netY + 80,95, 20);
+
+            ctx.fillStyle = "grey";
+            ctx.fillRect(netX + 100, netY - 100, 20, 1500);
+        }
+
+        function moveNet()
+        {
+            netX = getRandomInt(200, 500);
+            netY = getRandomInt(200, 300);
+        }
+
+        function getRandomInt(min, max) {
+            min = Math.ceil(min);
+            max = Math.floor(max);
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function resetBall()
+        {
+            ballShot = false;
+            velX = 0;
+            velY = 0;
+            ballY = 320;
+            ballX = 30;
+        }
+
+        function shootBall()
+        {
+            airtime = 15;
+            jump.play();
+            //alert("ball shot");
+            resetBall();
+
+            velX = forceX;
+            velY = -forceY;
+
+            ballShot = true;
+            
+        }
+        ctx.moveTo(0, 0);
+        ctx.lineTo(640, 480);
+        ctx.stroke();
+        
+        
+    </script>
+</body>
+</html>

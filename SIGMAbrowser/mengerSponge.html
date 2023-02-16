@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="shapeRender.css">
+</head>
+<body>
+    <h1>Primitive 3D Shape Renderer</h1>
+    <h4 id="usernameDisp">User:</h4>
+
+    <div class="container">
+ 
+        <canvas width="640" height="480" id="gameScreen" style="background-color: black;"></canvas>   
+        
+    </div>
+        
+    <script>
+        let user = {"name": "", "drawing": "", "currentBG": 0};
+        if(localStorage.getItem("username") === null || localStorage.getItem("username") === "logout")
+        {
+            window.location.href = "superUltraMegaSecureWebsite.html";
+        }
+
+        if(localStorage.getItem("SavedPaintings") === null)
+        {
+            let test = [{"name": "", "drawing": "", "currentBG": 0}];
+            localStorage.setItem("SavedPaintings", JSON.stringify(test));
+        }
+
+        user.name = localStorage.getItem("username");
+        document.getElementById("usernameDisp").innerHTML = "User: " + user.name;
+        
+
+
+        let c = document.getElementById("gameScreen");
+        let ctx = c.getContext("2d");
+        
+        let levels = prompt("How many levels?");
+        
+        ctx.translate(c.width/2, c.height/2);
+        ctx.strokeStyle = "white";
+        
+
+        function drawCube(x,y,radius,level, maxLev)
+        {
+            ctx.save();
+            ctx.beginPath();
+            ctx.translate(x,y)
+
+            if(level > maxLev)
+            {
+                ctx.restore();
+                return;
+            }
+
+            ctx.moveTo(radius,0);
+            ctx.lineTo(radius,radius);
+            ctx.lineTo(-radius,radius);
+            ctx.lineTo(-radius,-radius);
+            ctx.lineTo(radius,-radius);
+            ctx.lineTo(radius,0);
+            ctx.fillStyle = "white";
+            ctx.stroke();
+            ctx.fill();
+            ctx.beginPath();
+            ctx.fillStyle = "black";
+            ctx.moveTo(radius * 0.5, 0);
+
+            ctx.lineTo(radius * 0.5, radius * 0.5);
+            ctx.lineTo(radius * -0.5, radius * 0.5);
+            ctx.lineTo(radius * -0.5, radius * -0.5);
+            ctx.lineTo(radius * 0.5, radius * -0.5);
+
+            ctx.lineTo(radius * 0.5, 0);
+            ctx.stroke();
+            ctx.fill();
+            
+            drawCube(radius * 0.75, radius* 0.75, radius/4.1,level + 1, maxLev);
+            drawCube(0, radius* 0.75, radius/4.1,level + 1, maxLev);
+            drawCube(-radius* 0.75, radius* 0.75, radius/4.1,level + 1, maxLev);
+            
+            drawCube(radius * 0.75, 0, radius/4.1,level + 1, maxLev);
+            drawCube(-radius* 0.75, 0, radius/4.1,level + 1, maxLev);
+            
+            drawCube(radius * 0.75, -radius* 0.75, radius/4.1,level + 1, maxLev);
+            drawCube(0, -radius* 0.75, radius/4.1,level + 1, maxLev);
+            drawCube(-radius* 0.75, -radius* 0.75, radius/4.1,level + 1, maxLev);
+
+            ctx.restore();
+        }
+
+        
+        drawCube(0,0,220, 1, levels);
+        
+        
+    </script>
+</body>
+</html>

@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Σ</title>
+    <link rel="stylesheet" href="options.css">
+    <script src="jquery-3.6.1.min.js"></script>
+    <script src="FunkyFuncs.js"></script>
+    <link rel="icon" href="images/favicon.ico">
+</head>
+<body onload="loadBG()">
+
+    <div class="container">
+        
+        <h1>Options</h1>
+        <div class="searchContainer">
+            
+                
+            <div class="searchWindow">
+                <h4 id="userDisplay" style="margin-left: 10px;">User: </h4>
+                <div style="margin-top: -10px;">
+                    <input type="submit" value="Log out" onclick="javascript: logout()">
+                    <br>
+                    <input type="submit" value="Change username" onclick="javascript: changeUsername()">
+                    <br>
+                    <input type="submit" value="Change password" onclick="javascript: changePassword()">
+                    <br>
+                    <input type="submit" value="Change background color" onclick="javascript: changeBG()">
+                    <br>
+                    <input type="submit" value="Change quote" onclick="javascript: changeQuote()">
+                    <br>
+                    <input type="submit" value="Change profile picture" onclick="javascript: uploadPFP()">
+                    <br>
+                    <input type="submit" value="Back to browser" onclick="javascript: returnToMenu()">
+                    <br>
+                    <input type="submit" value="Delete account" onclick="javascript: deleteAccount()">
+                    <input id='fileid' type='file' hidden onchange="readURL(this)"/>
+                </div>
+                
+                
+                
+            </div>
+            <div class="searchWindow">
+                <img src="" id="pfpDisp">
+                <h3 id="quoteDisp">"swaws"</h3>
+            </div>
+        </div>
+        
+    </div>
+    
+    <script>
+        
+        if(localStorage.getItem("username") === null || localStorage.getItem("username") === "logout")
+        {
+            window.location.href = "superUltraMegaSecureWebsite.html";
+        }
+
+        function returnToMenu()
+        {
+            window.location.href = "browser.html";
+        }
+        
+        function logout()
+        {
+            localStorage.setItem("username", "logout");
+            window.location.href = "superUltraMegaSecureWebsite.html";
+        }
+
+        function changeQuote()
+        {
+            let newQuote = prompt("Enter new quote: ")
+
+            const username = localStorage.getItem("username");
+            
+            //max was here
+
+            let loginsList = JSON.parse(localStorage.getItem("logins"));
+            let exist = false;
+            for(var i = 0; i < loginsList.length; i++)
+            {
+                if(loginsList[i].user === username)
+                {
+                    exist = true;
+                    loginsList[i].quote = newQuote;
+                    break;
+                }
+            }
+            localStorage.setItem("logins", JSON.stringify(loginsList));
+            loadBG();
+        }
+
+        function uploadPFP()
+        {
+            document.getElementById('fileid').click();
+        }
+
+        function changePFP(url)
+        {
+            const username = localStorage.getItem("username");
+            
+            //max was here
+
+            let loginsList = JSON.parse(localStorage.getItem("logins"));
+            let exist = false;
+            for(var i = 0; i < loginsList.length; i++)
+            {
+                if(loginsList[i].user === username)
+                {
+                    exist = true;
+                    loginsList[i].pfp = url;
+                    break;
+                }
+            }
+            localStorage.setItem("logins", JSON.stringify(loginsList));
+            loadBG();
+        }
+
+        function readURL(input, imgNum) {
+            var url = input.value;
+            var ext = url.substring(url.lastIndexOf('.') + 1).toLowerCase();
+            if (input.files && input.files[0]&& (ext == "gif" || ext == "png" || ext == "jpeg" || ext == "jpg")) {
+                var reader = new FileReader();
+
+                reader.onload = function (e) {
+                    
+                    changePFP(e.target.result);
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+            
+        }
+
+        function changeBG()
+        {
+            let newBG = prompt("Enter new hex value (Ex: #FFFFFF): ")
+
+            const username = localStorage.getItem("username");
+            
+            //max was here
+
+            let loginsList = JSON.parse(localStorage.getItem("logins"));
+            let exist = false;
+            for(var i = 0; i < loginsList.length; i++)
+            {
+                if(loginsList[i].user === username)
+                {
+                    exist = true;
+                    loginsList[i].bg = newBG;
+                    break;
+                }
+            }
+            localStorage.setItem("logins", JSON.stringify(loginsList));
+            loadBG();
+        }
+
+        function changeUsername()
+        {
+            let newUser = prompt("Enter new name: ")
+
+            const username = localStorage.getItem("username");
+            
+            
+
+            let loginsList = JSON.parse(localStorage.getItem("logins"));
+            let exist = false;
+            for(var i = 0; i < loginsList.length; i++)
+            {
+                if(loginsList[i].user === username)
+                {
+                    exist = true;
+                    loginsList[i].user = newUser;
+                    localStorage.setItem("username", newUser);
+                    document.getElementById("userDisplay").innerHTML = "User: " + localStorage.getItem("username");
+                    break;
+                }
+            }
+            localStorage.setItem("logins", JSON.stringify(loginsList));
+        }
+
+        
+        function changePassword()
+        {
+            let newpass = prompt("Enter new password: ")
+
+            const username = localStorage.getItem("username");
+            
+            
+
+            let loginsList = JSON.parse(localStorage.getItem("logins"));
+            let exist = false;
+            for(var i = 0; i < loginsList.length; i++)
+            {
+                if(loginsList[i].user === username)
+                {
+                    exist = true;
+                    if(prompt("Enter old password: ") === loginsList[i].password)
+                    {
+                        if(checkPassValidity(newpass) === true)
+                        {
+                            loginsList[i].password = newpass;
+                            break;
+                        }
+                        else
+                        {
+                            alert("Invalid password");
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        alert("Incorrect password");
+                        break;
+                    }
+                    
+                }
+            }
+            localStorage.setItem("logins", JSON.stringify(loginsList));
+        }
+
+        function checkPassValidity(str)
+        {
+            
+            let hasUpper = false;
+            let hasLower = false;
+            let hasSpecialChar = false;
+            let hasNumber = false;
+            for (var i=0; i<str.length; i++)
+            {
+                if (str.charAt(i) == str.charAt(i).toUpperCase() && str.charAt(i).match(/[a-z]/i))
+                {
+                    hasUpper = true;
+                    break;
+                }
+            }
+            for (var i=0; i<str.length; i++)
+            {
+                if (str.charAt(i) == str.charAt(i).toLowerCase() && str.charAt(i).match(/[a-z]/i))
+                {
+                    hasLower = true;
+                    break;
+                }
+            }
+            for (var i=0; i<str.length; i++)
+            {
+                if (str.charAt(i).match(/[0-9]/i))
+                {
+                    hasNumber = true;
+                    break;
+                }
+            }
+
+            const specialchars = ["&","#","$","@","%","?","-"];
+            for (var i=0; i<str.length; i++)
+            {
+                if (specialchars.includes(str[i]))
+                {
+                    hasSpecialChar = true;
+                    break;
+                }
+            }
+
+            if(hasSpecialChar === true && hasNumber === true && hasUpper === true && hasLower === true)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        function deleteAccount()
+        {
+            console.log("deleting..");
+            let accounts = JSON.parse(localStorage.getItem("logins"));
+            
+            let SavedPaintings = JSON.parse(localStorage.getItem("SavedPaintings"));
+            for(var i = 0; i < accounts.length; i++)
+            {
+                console.log(i);
+                if(accounts[i].user == localStorage.getItem("username") )
+                {
+                    console.log("found account");
+                    if(confirm("Are you sure you want to delete your account?"))
+                    {
+                        accounts.splice(i, 1);
+
+                        let userExists = false;
+                        for(let i = 0; i < SavedPaintings.length; i++)
+                        {
+                            if(SavedPaintings[i].name === localStorage.getItem("username"))
+                            {
+                                SavedPaintings.splice(i,1);
+                                userExists = true;
+                                break;
+                            }
+                        }
+
+                        break;
+                    }
+                }
+            }
+
+            
+            
+            localStorage.setItem("username", "logout");
+            localStorage.setItem("logins", JSON.stringify(accounts));
+            localStorage.setItem("SavedPaintings", JSON.stringify(SavedPaintings));
+            window.location.href = "superUltraMegaSecureWebsite.html";
+
+        }
+
+        document.getElementById("userDisplay").innerHTML = "User: " + localStorage.getItem("username");
+        
+
+        function loadBG()
+        {
+            const username = localStorage.getItem("username");
+            
+            
+
+            let loginsList = JSON.parse(localStorage.getItem("logins"));
+            let exist = false;
+            for(var i = 0; i < loginsList.length; i++)
+            {
+                if(loginsList[i].user === username)
+                {
+                    exist = true;
+                    document.body.style.background = loginsList[i].bg;
+                    document.getElementById("quoteDisp").innerHTML = '"' + loginsList[i].quote + '"';
+                    document.getElementById("pfpDisp").src = loginsList[i].pfp;
+                    break;
+                }
+            }
+            localStorage.setItem("logins", JSON.stringify(loginsList));
+        }
+
+        
+        
+    </script>
+</body>
+</html>

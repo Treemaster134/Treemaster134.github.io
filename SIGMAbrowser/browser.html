@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S.I.G.M.A</title>
+    <link rel="stylesheet" href="browser.css">
+    <script src="jquery-3.6.1.min.js"></script>
+    <script src="FunkyFuncs.js"></script>
+    <link rel="icon" href="images/favicon.ico">
+    <script src="prebid-ads.js"></script>
+</head>
+<body onload="loadBG()">
+
+    <script>
+        let adBlockEnabled = false
+        async function detectAdBlock() {
+            
+            const googleAdUrl = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js'
+            try {
+                await fetch(new Request(googleAdUrl)).catch(_ => adBlockEnabled = true)
+            } catch (e) {
+                adBlockEnabled = true
+            } finally {
+                console.log(`AdBlock Enabled: ${adBlockEnabled}`)
+            }
+            if(adBlockEnabled === false)
+            {
+                document.getElementById("videoCont").style.display = "block";
+            }
+            if(adBlockEnabled === true)
+            {
+                document.getElementById("videoCont").style.display = "none";
+                document.getElementById("adMarq").style.display = "none";
+                document.getElementById("adVid").removeAttribute('autoplay');
+                
+            }
+        }
+        detectAdBlock()
+        
+    </script>
+
+    <div class="container">
+        
+        <!-- 
+        Search
+        Interface
+        Generating
+        Many
+        Arrays
+        -->
+        <h1>S.I.G.M.A</h1>
+        <h4>| Search - Interface - Generating - Many - Arrays |</h4>
+        <div id="videoCont">
+            <video src="video/commerc.mp4" id="adVid" width="1200px" height="100px"   autoplay loop> </video>
+            
+        </div>
+        <marquee behavior="alternate" scrollamount="100" id="adMarq"><h1>SHOULD HAVE USED ADBLOCK DUMBASS</h1></marquee>
+        <div class="searchContainer">
+            <div class="nameDisp">
+                <h4 id="userDisplay">User: </h4>
+            </div>
+            <div class="logout">
+                <input style="background-color: transparent;" type="submit" value="Log out" onclick="javascript: logout()">
+            </div>
+            <div class="deleteAccount">
+                <input style="background-color: transparent;" type="submit" value="Options" onclick="javascript: loadOptions()">
+            </div>
+            <div class="UserList">
+                <input style="background-color: transparent;" type="submit" value="View users" onclick="javascript: loadUserList()">
+            </div>
+            <div class="searchWindow">
+                <h2>Sök:</h2>
+                <input type="text" name="tagsSearch" id="tagsSearch" onkeydown="search(this)">
+                <h2>Hur?</h2>
+                <h3>Skriv tags så här: tag1,tag2,tag3</h3>
+            </div>
+            <div class="searchWindow">
+                <h2>Tags:</h2>
+                <ul>
+                    <li><h3>Spel</h3></li>
+                    <li><h3>Applikation</h3></li>
+                    <li><h3>En Spelare</h3></li>
+                    <li><h3>Två Spelare</h3></li>
+                    <li><h3>Misc.</h3></li>
+                </ul> 
+            </div>
+        </div>
+        <table id="data_table">
+            <tr>
+                <td><h2>Namn</h2></td>
+                <td><h4>Tags</h4></td>
+            </tr>
+        </table>
+    </div>
+    
+    <script>
+        
+        if(localStorage.getItem("username") === null || localStorage.getItem("username") === "logout")
+        {
+            window.location.href = "superUltraMegaSecureWebsite.html";
+        }
+
+        
+        function loadOptions()
+        {
+            window.location.href = "options.html";
+        }
+
+        function loadUserList()
+        {
+            window.location.href = "listusers.html";
+        }
+
+        function logout()
+        {
+            localStorage.setItem("username", "logout");
+            window.location.href = "superUltraMegaSecureWebsite.html";
+        }
+
+        function deleteAccount()
+        {
+            console.log("deleting..");
+            let accounts = JSON.parse(localStorage.getItem("logins"));
+            
+            for(var i = 0; i < accounts.length; i++)
+            {
+                console.log(i);
+                if(accounts[i].user == localStorage.getItem("username") )
+                {
+                    console.log("found account");
+                    if(confirm("Are you sure you want to delete your account?"))
+                    {
+                        accounts.splice(i, 1);
+                        break;
+                    }
+                }
+            }
+            
+            localStorage.setItem("username", "logout");
+            localStorage.setItem("logins", JSON.stringify(accounts));
+            window.location.href = "superUltraMegaSecureWebsite.html";
+
+        }
+
+        document.getElementById("userDisplay").innerHTML = "User: " + localStorage.getItem("username");
+
+        function search(ele)
+        {
+            if(event.key === 'Enter')
+            {
+                const tagArray = ele.value.split(",");
+                let items = [];
+                $.ajaxSetup({
+                    async: false
+                });
+                $.getJSON("data.json", function(json) {
+                    
+                    json.forEach(element => {
+                        let found = false;
+                        for(var i = 0; i < tagArray.length; i++)
+                        {
+                            if(element.tags.includes(tagArray[i]))
+                            {
+                                found = true;
+                                break;
+                            }
+                        }
+                        if(found === true)
+                        {
+                            items.push(element);
+                        }
+                    });
+                });
+
+                $.ajaxSetup({
+                    async: true
+                });
+                clearTable();
+                let table = document.getElementById("data_table");
+                let table_len = items.length;
+
+                if(tagArray[0] === "funny")
+                {
+                    var row = table.insertRow(0).outerHTML="<tr><td><h2>" + "Namn" + "</h2></td><td><h4>" + "Tags" + "</h4></td></tr>";
+                    var url = "";
+                    $.ajaxSetup({
+                        async: false
+                    });
+                    $.getJSON("https://www.reddit.com/r/programmerhumor/new.json?sort=hot", function(json) {
+                        //console.log(json); // this will show the info it in firebug console
+                        url = json.data.children[getRandomInt(0, json.data.children.length - 1)].data.permalink;
+                        console.log(url);
+                    });
+                    $.ajaxSetup({
+                        async: true
+                    });
+                    url = "https://www.reddit.com" + url;
+                    console.log(url);
+                    row = table.insertRow(0).outerHTML="<tr><td><a href='" + url + "'><h1>random från programmerhumor</h1></a></td></tr>";
+                    return;
+                }
+
+                for(var i = 0; i < table_len + 1; i++)
+                {
+                    if(i != 0)
+                    {
+                        let name = items[i - 1].name;
+                        let desc = items[i - 1].description;
+                        let tags = items[i - 1].tags;
+                        let title = items[i -1].title;
+
+                        var row = table.insertRow(i).outerHTML="<tr><td><a href=' " + title + ".html" + "'><h2>" + name + "</h2></a><h3>" + desc + "</h3></td><td><h4>" + tags + "</h4></td></tr>";
+                    }
+                    else
+                    {
+                        var row = table.insertRow(i).outerHTML="<tr><td><h2>" + "Namn" + "</h2></td><td><h4>" + "Tags" + "</h4></td></tr>";
+                    }
+                }
+            }
+        }
+        
+        function clearTable()
+        {
+            let table = document.getElementById("data_table");
+            
+            let rowsLeft = true;
+            
+            while(rowsLeft === true)
+            {
+                let table_len = table.rows.length;
+                if(table_len > 0)
+                {
+                    table.deleteRow(0);
+                }
+                else
+                {
+                    rowsLeft = false;
+                }
+            }
+        }
+
+        function loadBG()
+        {
+            const username = localStorage.getItem("username");
+            
+            
+
+            let loginsList = JSON.parse(localStorage.getItem("logins"));
+            let exist = false;
+            for(var i = 0; i < loginsList.length; i++)
+            {
+                if(loginsList[i].user === username)
+                {
+                    exist = true;
+                    document.body.style.background = loginsList[i].bg;
+                    break;
+                }
+            }
+            localStorage.setItem("logins", JSON.stringify(loginsList));
+        }
+    </script>
+</body>
+</html>
