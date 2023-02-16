@@ -91,7 +91,36 @@
                 newText = newText + alphabet[indexInAlphabet];
                 placeInKey += 1;
             }
-            alert("Result: " + newText + " Key: " + key);
+
+            newText = newText.split("");
+
+            for(var i = 0; i < newText.length; i++)
+            {
+                switch(newText[i].toLowerCase())
+                {
+                    case "o":
+                        newText[i] = "~";
+                        break;
+                    case "e":
+                        newText[i] += "£";
+                        break;
+                    case "t":
+                        newText[i] += "$";
+                        break;
+                    case "n":
+                        newText[i] += "€";
+                        break;
+                    case "a":
+                        newText[i] += "@";
+                        break;
+                    case "ö":
+                        newText[i] += "§";
+                        break;
+                }
+            }
+
+
+            alert("Result: " + newText.join("") + " Key: " + key);
         }
 
         function start(text, key)
@@ -112,6 +141,37 @@
         function Decrypt(text, key)
         {
             let placeInKey = 0;
+
+
+            inText = text.split("");
+
+            for(var i = 0; i < inText.length; i++)
+            {
+                switch(inText[i].toLowerCase())
+                {
+                    case "~":
+                        inText[i] = "o";
+                        break;
+                    case "£":
+                        inText[i] += "e";
+                        break;
+                    case "$":
+                        inText[i] += "t";
+                        break;
+                    case "€":
+                        inText[i] += "n";
+                        break;
+                    case "@":
+                        inText[i] += "a";
+                        break;
+                    case "§":
+                        inText[i] += "ö";
+                        break;
+                }
+            }
+
+            text = inText.join("");
+
             let newText = "";
             for(var i = 0; i < text.length; i++)
             {
@@ -147,6 +207,9 @@
                 newText = newText + alphabet[indexInAlphabet];
                 placeInKey += 1;
             }
+
+            
+
             alert("Result: " + newText);
         }
 
